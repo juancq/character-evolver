@@ -1,0 +1,48 @@
+inherits: [iga.yml]
+stepSize: 1
+population:
+  type: igastandard
+  size: 100
+  selection: roulette
+  combinepop: elitist
+  subset:
+    type: pca
+    size: 6
+crossover:
+  type: simple
+  prob: 0.75
+  points: 1
+mutation:
+  type: simple
+  prob: 0.05
+application:
+  name: character3d
+  vars:
+    - name: shape
+      max: 2.
+      min: 0.
+      scale: 1.
+    - name: sx
+      max: 2.
+      min: 0.1
+      scale: 0.1
+    - name: sy
+      max: 2.
+      min: 0.1
+      scale: 0.1
+    - name: sz
+      max: 2.
+      min: 0.1
+      scale: 0.1
+    - name: yaw
+      max: 20.
+      min: 0.
+      scale: 2.
+    - name: roll
+      max: 20.
+      min: 0.
+      scale: 2.
+    - name: pitch
+      max: 20.
+      min: 0.
+      scale: 2.

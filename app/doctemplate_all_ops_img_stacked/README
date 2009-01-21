@@ -1,0 +1,2 @@
+In this implementation all operators were applied during crossover, which meant too much genetic material was being exchanged.
+So the resulting panels had lots of shapes stacked on top of each other.

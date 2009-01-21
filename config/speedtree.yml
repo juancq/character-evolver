@@ -1,0 +1,44 @@
+inherits: [iga.yml]
+stepSize: 1
+population:
+  type: igastandard
+  size: 100
+  selection: roulette
+  combinepop: elitist
+  subset:
+    type: pca
+    size: 6
+crossover:
+  type: simple
+  prob: 0.75
+  points: 1
+mutation:
+  type: simple
+  prob: 0.01
+application:
+  name: speedtree
+  vars:
+    - name: numIterations 
+      max: 15.
+      min: 0.
+      scale: 1.
+    - name: numBranches
+      max: 4.
+      min: 1.
+      scale: 1.
+    - name: decX
+      max: 3.
+      min: 1.1
+      scale: 0.1
+    - name: decY
+      max: 3.
+      min: 1.1
+      scale: 0.1
+    - name: decZ
+      max: 3.
+      min: 1.1
+      scale: 0.1
+    - name: branch
+      max: 5.
+      min: 2.
+      scale: 1.0

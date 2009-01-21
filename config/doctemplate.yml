@@ -1,0 +1,37 @@
+inherits: [iga.yml]
+numgen: 30
+stepSize: 1
+rowSize: 3
+peers: []
+seed: 100
+operators: [0., 0., 0., 0., 0.]
+population:
+  type: xo_best_ga
+  size: 20
+  selection: roulette
+  combinepop: replace
+  subset:
+    type: doctemplate
+    size: 9
+crossover:
+  type: newdoc
+  prob: 0.7
+  points: 1
+mutation:
+  type: newdoc
+  prob: 0.01
+application:
+  name: doctemplate
+  feedback: [Best]
+  maxDepth: 6
+  maxRoom: 8
+  minRoom: 3
+  plotSizeX: 150
+  plotSizeY: 200
+  template: [[1,0.7],[[1,0.5],[2,0.3]],[[2,0.7],[1,1.0],[1,1.0],[1,0.0]],[[1,1.0],[1,1.0]]]
+  num_shapes: 3
+  max_scale: 0.1
+  min_scale: -0.1
+  rr_radius: 10.
+  num_scale: 128
+  hide_threshold: 0.10
