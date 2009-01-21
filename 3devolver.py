@@ -10,15 +10,9 @@ import SampleFramework as sf
 import evolve
 
 SPACE = 1000
-MOVE = 1000
+MOVE = 2000
 
-def node_helper(cur_node, _genes):
-    cur_node.yaw(ogre.Degree(_genes['yaw']))
-    cur_node.pitch(ogre.Degree(_genes['pitch']))
-    cur_node.roll(ogre.Degree(_genes['roll']))
-    cur_node.setScale(_genes['sx'], _genes['sy'], _genes['sz'])
-    cur_node.showBoundingBox(True)
-
+def get_width_height(cur_node):
     aab = cur_node.getAttachedObject(0).getBoundingBox();
     min = aab.getMinimum() * cur_node.getScale();
     max = aab.getMaximum() * cur_node.getScale();
@@ -27,6 +21,23 @@ def node_helper(cur_node, _genes):
     rad = size.z / 2. if size.x > size.z else size.x / 2.0
     width = size.z if size.x > size.z else size.x
     height = size.y
+    return width, height
+
+
+def node_helper(cur_node, _genes, inc_parent = True):
+    cur_node.yaw(ogre.Degree(_genes['yaw']))
+    cur_node.pitch(ogre.Degree(_genes['pitch']))
+    cur_node.roll(ogre.Degree(_genes['roll']))
+    cur_node.setScale(_genes['sx'], _genes['sy'], _genes['sz'])
+    #cur_node.showBoundingBox(True)
+
+    w1, h1 = get_width_height(cur_node)
+    w2, h2 = get_width_height(cur_node.getParentSceneNode()) if inc_parent else (0,0)
+    print w2, h2
+    #w2, h2 = get_width_height(p)
+    #p = cur_node.getParentSceneNode()
+
+    width, height = (w1+w2)/2., (h1+h2)/2.
     return width, height
     #float radius = (size.x > size.z) ? size.z/2.0f : size.x/2.0f;
     #mPlayerWidth = (size.x > size.z) ? size.z : size.x;
@@ -155,9 +166,9 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         if self.Keyboard.isKeyDown(OIS.KC_RIGHT) or self.Keyboard.isKeyDown(OIS.KC_D):
             transVector.x += self.move
 
-        if self.Keyboard.isKeyDown(OIS.KC_PGUP) or self.Keyboard.isKeyDown(OIS.KC_Q):
+        if self.Keyboard.isKeyDown(OIS.KC_PGUP) or self.Keyboard.isKeyDown(OIS.KC_Z):
             transVector.y -= self.move
-        if self.Keyboard.isKeyDown(OIS.KC_PGDOWN) or self.Keyboard.isKeyDown(OIS.KC_E):
+        if self.Keyboard.isKeyDown(OIS.KC_PGDOWN) or self.Keyboard.isKeyDown(OIS.KC_C):
             transVector.y += self.move
 
 
@@ -238,7 +249,7 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         node = head_node = parent_node.createChildSceneNode('Head%d' % i)
         ent = sceneManager.createEntity('Head%d' %i, ent_type)
         ent_helper(node, ent, c % 3 + 1)
-        w, h = node_helper(node, genes)
+        w, h = node_helper(node, genes, inc_parent = False)
 
         c += 1
         genes = genome[c]

@@ -25,24 +25,24 @@ application:
     - name: sx
       max: 2.
       min: 0.1
-      scale: 0.1
+      scale: 0.01
     - name: sy
       max: 2.
       min: 0.1
-      scale: 0.1
+      scale: 0.01
     - name: sz
       max: 2.
       min: 0.1
-      scale: 0.1
+      scale: 0.01
     - name: yaw
       max: 20.
-      min: 0.
-      scale: 2.
+      min: -20.
+      scale: 1.
     - name: roll
       max: 20.
-      min: 0.
-      scale: 2.
+      min: -20.
+      scale: 1.
     - name: pitch
       max: 20.
-      min: 0.
-      scale: 2.
+      min: -20.
+      scale: 1.
