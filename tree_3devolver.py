@@ -352,7 +352,7 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
             genes = tree.decoded_chrom 
             ent_type = sceneManager.PT_SPHERE if genes['shape'] else sceneManager.PT_CUBE
             name = 'Node%d_%d' % (node_id, tree.id)
-            node = head_node = parent_node.createChildSceneNode(name)
+            node = parent_node.createChildSceneNode(name)
             ent = sceneManager.createEntity(name, ent_type)
             ent_helper(node, ent, c % 3 + 1)
             w, h = node_helper(node, genes, inc_parent = False)
@@ -374,62 +374,62 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         tree = genome
         drawTree(tree, parent_node, sceneManager, i)
 
-        # head
-        ent_type = pt_sphere if genes['shape'] else pt_cube
-        node = head_node = parent_node.createChildSceneNode('Head%d' % i)
-        ent = sceneManager.createEntity('Head%d' %i, ent_type)
-        ent_helper(node, ent, c % 3 + 1)
-        w, h = node_helper(node, genes, inc_parent = False)
+        ## head
+        #ent_type = pt_sphere if genes['shape'] else pt_cube
+        #node = head_node = parent_node.createChildSceneNode('Head%d' % i)
+        #ent = sceneManager.createEntity('Head%d' %i, ent_type)
+        #ent_helper(node, ent, c % 3 + 1)
+        #w, h = node_helper(node, genes, inc_parent = False)
 
-        c += 1
-        genes = genome[c]
-        # torso
-        node = torso_node = head_node.createChildSceneNode('Torso%d' % i)
-        ent = sceneManager.createEntity('Torso%d' %i, sceneManager.PT_CUBE)
-        ent_helper(node, ent, c % 3 + 1)
-        w, h = node_helper(node, genes)
-        dist = node.getParentSceneNode().getAttachedObject(0).getBoundingRadius() + node.getAttachedObject(0).getBoundingRadius()
-        node.position = (0, -h, 0)
+        #c += 1
+        #genes = genome[c]
+        ## torso
+        #node = torso_node = head_node.createChildSceneNode('Torso%d' % i)
+        #ent = sceneManager.createEntity('Torso%d' %i, sceneManager.PT_CUBE)
+        #ent_helper(node, ent, c % 3 + 1)
+        #w, h = node_helper(node, genes)
+        #dist = node.getParentSceneNode().getAttachedObject(0).getBoundingRadius() + node.getAttachedObject(0).getBoundingRadius()
+        #node.position = (0, -h, 0)
 
-        c += 1
-        genes = genome[c]
-        # left arm
-        node = leftarm_node = torso_node.createChildSceneNode('LeftArm%d' % i)
-        ent = sceneManager.createEntity('LeftArm%d' %i, sceneManager.PT_SPHERE)
-        ent_helper(node, ent, c % 3 + 1)
-        w, h = node_helper(node, genes)
-        dist = node.getParentSceneNode().getAttachedObject(0).getBoundingRadius() + node.getAttachedObject(0).getBoundingRadius()
-        node.position = (-w, 0, 0)
+        #c += 1
+        #genes = genome[c]
+        ## left arm
+        #node = leftarm_node = torso_node.createChildSceneNode('LeftArm%d' % i)
+        #ent = sceneManager.createEntity('LeftArm%d' %i, sceneManager.PT_SPHERE)
+        #ent_helper(node, ent, c % 3 + 1)
+        #w, h = node_helper(node, genes)
+        #dist = node.getParentSceneNode().getAttachedObject(0).getBoundingRadius() + node.getAttachedObject(0).getBoundingRadius()
+        #node.position = (-w, 0, 0)
 
-        c += 1
-        genes = genome[c]
-        # right arm
-        node = rightarm_node = torso_node.createChildSceneNode('RightArm%d' % i)
-        ent = sceneManager.createEntity('RightArm%d' %i, sceneManager.PT_SPHERE)
-        ent_helper(node, ent, c % 3 + 1)
-        w, h = node_helper(node, genes)
-        dist = node.getParentSceneNode().getAttachedObject(0).getBoundingRadius() + node.getAttachedObject(0).getBoundingRadius()
-        node.position = (w, 0, 0)
+        #c += 1
+        #genes = genome[c]
+        ## right arm
+        #node = rightarm_node = torso_node.createChildSceneNode('RightArm%d' % i)
+        #ent = sceneManager.createEntity('RightArm%d' %i, sceneManager.PT_SPHERE)
+        #ent_helper(node, ent, c % 3 + 1)
+        #w, h = node_helper(node, genes)
+        #dist = node.getParentSceneNode().getAttachedObject(0).getBoundingRadius() + node.getAttachedObject(0).getBoundingRadius()
+        #node.position = (w, 0, 0)
 
-        c += 1
-        genes = genome[c]
-        # left leg
-        node = leftleg_node = torso_node.createChildSceneNode('LeftLeg%d' % i)
-        ent = sceneManager.createEntity('LeftLeg%d' %i, sceneManager.PT_CUBE)
-        ent_helper(node, ent, c % 3 + 1)
-        w, h = node_helper(node, genes)
-        dist = node.getParentSceneNode().getAttachedObject(0).getBoundingRadius() + node.getAttachedObject(0).getBoundingRadius()
-        node.position = (-w, -h, 0)
+        #c += 1
+        #genes = genome[c]
+        ## left leg
+        #node = leftleg_node = torso_node.createChildSceneNode('LeftLeg%d' % i)
+        #ent = sceneManager.createEntity('LeftLeg%d' %i, sceneManager.PT_CUBE)
+        #ent_helper(node, ent, c % 3 + 1)
+        #w, h = node_helper(node, genes)
+        #dist = node.getParentSceneNode().getAttachedObject(0).getBoundingRadius() + node.getAttachedObject(0).getBoundingRadius()
+        #node.position = (-w, -h, 0)
 
-        c += 1
-        genes = genome[c]
-        # right leg
-        node = rightleg_node = torso_node.createChildSceneNode('RightLeg%d' % i)
-        ent = sceneManager.createEntity('RightLeg%d' %i, sceneManager.PT_CUBE)
-        ent_helper(node, ent, c % 3 + 1)
-        w, h = node_helper(node, genes)
-        dist = node.getParentSceneNode().getAttachedObject(0).getBoundingRadius() + node.getAttachedObject(0).getBoundingRadius()
-        node.position = (w, -h, 0)
+        #c += 1
+        #genes = genome[c]
+        ## right leg
+        #node = rightleg_node = torso_node.createChildSceneNode('RightLeg%d' % i)
+        #ent = sceneManager.createEntity('RightLeg%d' %i, sceneManager.PT_CUBE)
+        #ent_helper(node, ent, c % 3 + 1)
+        #w, h = node_helper(node, genes)
+        #dist = node.getParentSceneNode().getAttachedObject(0).getBoundingRadius() + node.getAttachedObject(0).getBoundingRadius()
+        #node.position = (w, -h, 0)
 
 #----------------------------------------#
 
