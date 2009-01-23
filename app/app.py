@@ -28,6 +28,7 @@ class Application:
                 scale = gene_variable.get('scale', 1)
                 attr[name] = {'max': gmax, 'min': gmin, 'scale': scale}
                 varBits = int(math.ceil(math.log((gmax-gmin)/float(scale), 2)))
+                if varBits == 0: varBits = 1
                 bits += varBits
                 attr[name]['bits'] = varBits
                 attr_genome.append(name)

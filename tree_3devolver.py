@@ -15,12 +15,14 @@ MOVE = 2000
 
 NEXTID = 1
 
+#-------------------------------------------#
 def tempName():
     global NEXTID
     id = NEXTID
     NEXTID += 1
     return 't%d'%id
 
+#-------------------------------------------#
 class OgreText(object):
     """Class for displaying text in Ogre above a Movable."""
     def __init__(self, movable, camera, text=''):
@@ -202,6 +204,7 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
             l = 6
             ga = evolve.init_iga({'app_name': curstudy, 'geomNodes': l})
             self.genomes = ga.draw()
+            print 'self.genomes', self.genomes
             self.ga = ga
 
             self.newPop()
@@ -338,6 +341,25 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
 
         self.text_overlays = text_overlays
 
+#-------------------------------------------#
+    def drawTree(tree, parent_node, sceneManager, node_id):
+        '''
+        Decode bit string.
+        '''
+        if tree is None:
+            return
+        else:
+            genes = tree.decoded_chrom 
+            ent_type = sceneManager.PT_SPHERE if genes['shape'] else sceneManager.PT_CUBE
+            name = 'Node%d_%d' % (node_id, tree.id)
+            node = head_node = parent_node.createChildSceneNode(name)
+            ent = sceneManager.createEntity(name, ent_type)
+            ent_helper(node, ent, c % 3 + 1)
+            w, h = node_helper(node, genes, inc_parent = False)
+
+            self.drawTree(tree.left)
+            self.drawTree(tree.right)
+
 #---------------------------------#
     def makeCharacter(self, node_id, parent_node, genome = []):
         '''
@@ -348,6 +370,9 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         c = 0
         genes = genome[c]
         i = node_id
+
+        tree = genome
+        drawTree(tree, parent_node, sceneManager, i)
 
         # head
         ent_type = pt_sphere if genes['shape'] else pt_cube

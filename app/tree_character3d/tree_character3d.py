@@ -101,6 +101,41 @@ class Tree_character3d(app.Application):
         return [self.decode(ind) for ind in subset]
 
 #-------------------------------------------#
+    def decodeTree(self, tree):
+        '''
+        Decode bit string.
+        '''
+        if tree is None:
+            return
+        else:
+            self.decodeNode(tree)
+            self.decodeTree(tree.left)
+            self.decodeTree(tree.right)
+
+#-------------------------------------------#
+    def decodeNode(self, ind):
+        '''
+        Decode bit string.
+        '''
+        chrom = ind.genome
+        bits = 0
+        data = {}
+        for name in self.attr_genome:
+            value = self.attr[name]
+            temp = 0
+            top = int(bits+value['bits'])
+            for i in xrange(int(bits), top):
+                if chrom[i]:
+                    temp += 2**(top-i-1)
+
+            temp = temp / (2.**value['bits'] - 1)
+            temp =  temp * (value['max']-value['min']) + value['min']
+            data[name] = temp
+            bits += value['bits']
+
+        ind.decoded_chrom = data.copy()
+
+#-------------------------------------------#
     def decode(self, ind):
         '''
         Decode bit string.
@@ -114,30 +149,11 @@ class Tree_character3d(app.Application):
             bit_chrome.extend(sub_list)
         ind.bit_chrome = bit_chrome
 
-        num_nodes = len(all_bits)
-        data_list = []
-        for g_i in range(num_nodes):
-            data = {}
-            bits = 0
-            chrom = all_bits[g_i]
-            for name in self.attr_genome:
-                value = self.attr[name]
-                temp = 0
-                top = int(bits+value['bits'])
-                for i in xrange(int(bits), top):
-                    if chrom[i]:
-                        temp += 2**(top-i-1)
 
-                temp = temp / (2.**value['bits'] - 1)
-                temp =  temp * (value['max']-value['min']) + value['min']
-                data[name] = temp
-                bits += value['bits']
+        self.decodeTree(root)
+        ind.decoded_data = root
 
-            data_list.append(data)
-
-        ind.decoded_chrom = data_list
-
-        return data_list
+        return root
 
 #-------------------------------------------#
     def report(self, pop, subset, gen):

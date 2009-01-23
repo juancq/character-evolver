@@ -19,7 +19,7 @@ application:
   name: character3d
   vars:
     - name: shape
-      max: 2.
+      max: 1.
       min: 0.
       scale: 1.
     - name: sx
