@@ -130,7 +130,6 @@ def node_helper(cur_node, _genes, inc_parent = True):
 
     w1, h1 = get_width_height(cur_node)
     w2, h2 = get_width_height(cur_node.getParentSceneNode()) if inc_parent else (0,0)
-    print w2, h2
     #w2, h2 = get_width_height(p)
     #p = cur_node.getParentSceneNode()
 
@@ -197,10 +196,9 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
 
 #---------------------------------#
     def keyPressed(self, evt):
-        print 'pressed', self.Keyboard.getAsString(evt.key)
 
         if evt.key is OIS.KC_N:
-            curstudy = 'character3d.yml'
+            curstudy = 'tree_character3d.yml'
             l = 6
             ga = evolve.init_iga({'app_name': curstudy, 'geomNodes': l})
             self.genomes = ga.draw()
@@ -211,6 +209,7 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         elif evt.key is not OIS.KC_ESCAPE:
             best_selected = self.Keyboard.getAsString(evt.key)
             if self.ga and best_selected in self.num_keys:
+                print 'pressed', self.Keyboard.getAsString(evt.key)
                 best_selected = int(best_selected)
                 self.genomes = self.ga.web_step({'feedback': [best_selected]})
                 self.newPop()
@@ -301,10 +300,9 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         if len(result) > 0:
             for item in result:
                 if item.movable:
-                    print 'movable'
                     self.currentObject = item.movable.getParentSceneNode()
                     item.movable.getParentSceneNode().showBoundingBox(True)
-                    print item.movable.getParentSceneNode().getName()
+                    #print item.movable.getParentSceneNode().getName()
                     break # We found an existing object
  
         if self.currentObject:
@@ -334,9 +332,9 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
             ent = sceneManager.createEntity('Separator%d' %i, 'knot.mesh')
 
             sep_node.attachObject(ent)
-            t = OgreText(ent, self.camera, '%d' % i)
-            t.enable(True)
-            text_overlays.append(t)
+            #t = OgreText(ent, self.camera, '%d' % i)
+            #t.enable(True)
+            #text_overlays.append(t)
 
         self.text_overlays = text_overlays
 

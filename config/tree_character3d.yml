@@ -6,8 +6,8 @@ population:
   selection: roulette
   combinepop: elitist
   subset:
-    type: pca
-    size: 6
+    type: random
+    size: 9
 crossover:
   type: simple
   prob: 0.75

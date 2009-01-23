@@ -6,12 +6,24 @@ import mdp
 from scipy.cluster.vq import *
 from scipy import array
 
-NUM_CLUSTERS = 9
+NUM_CLUSTERS = 6
+
 
 def subset(pop, rand, size):
     newpop = pop[:]
 
-    genomes = array([array(map(float, x.genome)) for x in newpop])
+    # convert list
+    lens = [len(x.bit_chrome) for x in pop]
+    uni_len = max(lens)
+    var_genomes = [x.bit_chrome for x in pop]
+    for i in range(len(var_genomes)):
+        var_genomes[i].extend([0 for i in range(uni_len-len(var_genomes[i]))])
+
+    # end convert list
+
+    genomes = array([array(map(float, genome)) for genome in var_genomes])
+
+    #genomes = array([array(map(float, x.genome)) for x in newpop])
     print genomes.ndim
     pcanode = mdp.nodes.PCANode(output_dim = 2, svd = True)
 
@@ -33,9 +45,9 @@ def subset(pop, rand, size):
     res, idx = kmeans2(w, NUM_CLUSTERS, minit = 'points')
 
     color_tuples = [(0,0,0), (1,0,0), (0,1,0), (0,0,1), (1,1,0), (0,1,1), (1,0,1), (.5,.8,.2), (.9,.2,.5)]
+    print 'idx', idx
     cs = [color_tuples[i] for i in idx]
 
-    print 'idx', idx
     subset_idx = []
     subset_index = []
     i = 0

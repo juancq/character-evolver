@@ -3,7 +3,7 @@ import app.app as app
 from app.helperfuncs import hamming, lcs
 from iga.individual import Individual
 
-import TreeNode
+from treenode import TreeNode
 
 #-------------------------------------------#
 class TreeIndividual(Individual):
@@ -26,10 +26,30 @@ def printTree(depth, tree):
         printTree(depth+1, tree.left)
         printTree(depth+1, tree.right)
 
+
+def getTreeBits(tree, all_bits):
+
+    if tree is None:
+        return
+    else:
+        all_bits.append(tree.getGenome())
+        getTreeBits(tree.left, all_bits)
+        getTreeBits(tree.right, all_bits)
+
+def initTree(tree, genome_len, rand):
+
+    if tree is None:
+        return
+    else:
+        tree.init(genome_len, rand)
+        initTree(tree.left, genome_len, rand)
+        initTree(tree.right, genome_len, rand)
+
+
 def createTree(depth, tree):
     if depth is 0:
         return
-    else
+    else:
         tree.left = TreeNode()
         createTree(depth-1, tree.left)
         tree.right = TreeNode()
@@ -48,13 +68,15 @@ class Tree_character3d(app.Application):
         '''
         Need to create trees here.
         '''
-        depth = 4
+        depth = 2
         root = TreeNode()
         createTree(depth, root)
         counter = 0
         printTree(counter, root)
+        initTree(root, self.geneLen, self.random)
 
-        pop = [Individual(self.random, self.geneLen) for i in xrange(popsize)]
+        pop = [Individual(self.random, length = 0, genome = root) for i in range(popsize)]
+        for ind in pop: self.decode(ind)
         return pop
 
 #-------------------------------------------#
@@ -67,7 +89,7 @@ class Tree_character3d(app.Application):
         [best]
         '''
         best = user_feedback[0]
-        ind.fitness = hamming(ind.genome, best.genome)
+        ind.fitness = hamming(ind.bit_chrome, best.bit_chrome)
 
 
 #-------------------------------------------#
@@ -83,11 +105,21 @@ class Tree_character3d(app.Application):
         '''
         Decode bit string.
         '''
-        chrom = ind.genome
-        bits = 0
+        root = ind.genome
+        all_bits = []
+        getTreeBits(root, all_bits)
+
+        bit_chrome = []
+        for sub_list in all_bits:
+            bit_chrome.extend(sub_list)
+        ind.bit_chrome = bit_chrome
+
+        num_nodes = len(all_bits)
         data_list = []
-        for g_i in range(self.geomNodes):
+        for g_i in range(num_nodes):
             data = {}
+            bits = 0
+            chrom = all_bits[g_i]
             for name in self.attr_genome:
                 value = self.attr[name]
                 temp = 0
