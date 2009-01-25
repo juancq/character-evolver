@@ -68,15 +68,19 @@ class Tree_character3d(app.Application):
         '''
         Need to create trees here.
         '''
-        depth = 2
-        root = TreeNode()
-        createTree(depth, root)
-        counter = 0
-        printTree(counter, root)
-        initTree(root, self.geneLen, self.random)
+        pop = []
+        for i in range(popsize):
+            depth = 2
+            root = TreeNode()
+            root.setRoot()
+            createTree(depth, root)
+            counter = 0
+            printTree(counter, root)
+            initTree(root, self.geneLen, self.random)
 
-        pop = [Individual(self.random, length = 0, genome = root) for i in range(popsize)]
-        for ind in pop: self.decode(ind)
+            ind = Individual(self.random, length = 0, genome = root)
+            pop.append(ind)
+
         return pop
 
 #-------------------------------------------#
@@ -89,6 +93,8 @@ class Tree_character3d(app.Application):
         [best]
         '''
         best = user_feedback[0]
+        self.decode(ind)
+        self.decode(best)
         ind.fitness = hamming(ind.bit_chrome, best.bit_chrome)
 
 

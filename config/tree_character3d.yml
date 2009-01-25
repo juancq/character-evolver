@@ -9,11 +9,11 @@ population:
     type: random
     size: 9
 crossover:
-  type: simple
-  prob: 0.75
+  type: binarytree
+  prob: 1.0
   points: 1
 mutation:
-  type: simple
+  type: binarytree
   prob: 0.05
 application:
   name: tree_character3d
@@ -24,16 +24,16 @@ application:
       scale: 1.
     - name: tx
       max: 1.
-      min: 0.0
-      scale: 0.01
+      min: -1.
+      scale: 0.1
     - name: ty
       max: 1.
-      min: 0.0
-      scale: 0.01
+      min: -1.
+      scale: 0.1
     - name: tz
       max: 1.
-      min: 0.0
-      scale: 0.01
+      min: -1.
+      scale: 0.1
     - name: sx
       max: 2.
       min: 0.1

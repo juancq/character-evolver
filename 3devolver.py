@@ -352,6 +352,7 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         node = head_node = parent_node.createChildSceneNode('Head%d' % i)
         ent = sceneManager.createEntity('Head%d' %i, ent_type)
         ent_helper(node, ent, c % 3 + 1)
+        #ent.setMaterialName('facial/drbunsen_head')
         w, h = node_helper(node, genes, inc_parent = False)
 
         c += 1

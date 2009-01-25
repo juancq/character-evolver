@@ -23,6 +23,26 @@ def tempName():
     return 't%d'%id
 
 #-------------------------------------------#
+def drawTree(tree, parent_node, sceneManager, node_id):
+    '''
+    Decode bit string.
+    '''
+    if tree is None:
+        return
+    else:
+        genes = tree.decoded_chrom 
+        ent_type = sceneManager.PT_SPHERE if genes['shape'] else sceneManager.PT_CUBE
+        name = 'Node%d_%d' % (node_id, tree.id)
+        child_node = parent_node.createChildSceneNode(name)
+        ent = sceneManager.createEntity(name, ent_type)
+        ent_helper(child_node, ent)
+        _inc_parent = False if tree.isRoot() else True
+        w, h = node_helper(child_node, genes, inc_parent = _inc_parent)
+
+        drawTree(tree.left, child_node, sceneManager, node_id)
+        drawTree(tree.right, child_node, sceneManager, node_id)
+
+#-------------------------------------------#
 class OgreText(object):
     """Class for displaying text in Ogre above a Movable."""
     def __init__(self, movable, camera, text=''):
@@ -135,7 +155,9 @@ def node_helper(cur_node, _genes, inc_parent = True):
     #w2, h2 = get_width_height(p)
     #p = cur_node.getParentSceneNode()
 
+    #print _genes
     width, height = (w1+w2)/2., (h1+h2)/2.
+    cur_node.translate(width*_genes['tx'], height*_genes['ty'], 0)
     return width, height
     #float radius = (size.x > size.z) ? size.z/2.0f : size.x/2.0f;
     #mPlayerWidth = (size.x > size.z) ? size.z : size.x;
@@ -144,6 +166,7 @@ def node_helper(cur_node, _genes, inc_parent = True):
 
 def ent_helper(cur_node, _ent, n = 0):
     #_ent.setMaterialName('Examples/TextureEffect%d' % (node_id % 3 + 1))
+    #_ent.setMaterialName('Examples/OgreLogo')
     _ent.setMaterialName('Examples/Rockwall')
     cur_node.attachObject(_ent)
 
@@ -204,7 +227,6 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
             l = 6
             ga = evolve.init_iga({'app_name': curstudy, 'geomNodes': l})
             self.genomes = ga.draw()
-            print 'self.genomes', self.genomes
             self.ga = ga
 
             self.newPop()
@@ -323,6 +345,7 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
 
         #[root_node.getChild('Individual%d' % i).removeAllChildren() for i in range(9)]
 
+        print self.genomes
         for i, node in enumerate(self.ind_nodes):
             node.removeAndDestroyAllChildren()
             node_genes = self.genomes[i]
@@ -333,44 +356,23 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
             sep_node = sceneManager.getSceneNode('Separator%d' % i)
             sep_node.removeAllChildren()
             ent = sceneManager.createEntity('Separator%d' %i, 'knot.mesh')
+            ent.setMaterialName('Examples/OgreLogo')
 
             sep_node.attachObject(ent)
-            #t = OgreText(ent, self.camera, '%d' % i)
-            #t.enable(True)
-            #text_overlays.append(t)
+            t = OgreText(ent, self.camera, '%d' % i)
+            t.enable(True)
+            text_overlays.append(t)
 
         self.text_overlays = text_overlays
 
-#-------------------------------------------#
-    def drawTree(tree, parent_node, sceneManager, node_id):
-        '''
-        Decode bit string.
-        '''
-        if tree is None:
-            return
-        else:
-            genes = tree.decoded_chrom 
-            ent_type = sceneManager.PT_SPHERE if genes['shape'] else sceneManager.PT_CUBE
-            name = 'Node%d_%d' % (node_id, tree.id)
-            node = parent_node.createChildSceneNode(name)
-            ent = sceneManager.createEntity(name, ent_type)
-            ent_helper(node, ent, c % 3 + 1)
-            w, h = node_helper(node, genes, inc_parent = False)
-
-            self.drawTree(tree.left)
-            self.drawTree(tree.right)
 
 #---------------------------------#
-    def makeCharacter(self, node_id, parent_node, genome = []):
+    def makeCharacter(self, node_id, parent_node, genome = None):
         '''
         Create a 3d character with 6 parts: head, torso, 2 arms, 2 legs.
         '''
         sceneManager = self.sceneManager
-        pt_sphere, pt_cube = sceneManager.PT_SPHERE, sceneManager.PT_CUBE
-        c = 0
-        genes = genome[c]
         i = node_id
-
         tree = genome
         drawTree(tree, parent_node, sceneManager, i)
 
