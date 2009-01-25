@@ -18,6 +18,35 @@ class TreeNode:
         self.isroot = False
         self.num_children = 0
 
+#-------------------------------------------------#
+    def mutation(self, prob, random):
+        genome = self.genome
+        for i in range(len(genome)):
+            if random.random() < prob:
+                genome[i] = genome[i] ^ 1
+
+#-------------------------------------------------#
+    def mut(self, prob, random):
+        '''
+        Mutate attributes of nodes.
+        '''
+        self.mutation(prob, random)
+        self.mutNodes(self.left, prob, random)
+        self.mutNodes(self.right, prob, random)
+
+
+#-------------------------------------------------#
+    def mutNodes(self, tree, prob, random):
+        '''
+        Mutate attributes of nodes.
+        '''
+        if tree is None:
+            return
+        else:
+            tree.mutation(prob, random)
+            self.mutNodes(tree.left, prob, random)
+            self.mutNodes(tree.right, prob, random)
+
 
 #-------------------------------------------------#
     def countChildren(self):
