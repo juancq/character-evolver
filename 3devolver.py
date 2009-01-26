@@ -358,51 +358,51 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         c += 1
         genes = genome[c]
         # torso
+        ent_type = pt_sphere if genes['shape'] else pt_cube
         node = torso_node = head_node.createChildSceneNode('Torso%d' % i)
-        ent = sceneManager.createEntity('Torso%d' %i, sceneManager.PT_CUBE)
+        ent = sceneManager.createEntity('Torso%d' %i, ent_type)
         ent_helper(node, ent, c % 3 + 1)
         w, h = node_helper(node, genes)
-        dist = node.getParentSceneNode().getAttachedObject(0).getBoundingRadius() + node.getAttachedObject(0).getBoundingRadius()
         node.position = (0, -h, 0)
 
         c += 1
         genes = genome[c]
         # left arm
+        ent_type = pt_sphere if genes['shape'] else pt_cube
         node = leftarm_node = torso_node.createChildSceneNode('LeftArm%d' % i)
-        ent = sceneManager.createEntity('LeftArm%d' %i, sceneManager.PT_SPHERE)
+        ent = sceneManager.createEntity('LeftArm%d' %i, ent_type)
         ent_helper(node, ent, c % 3 + 1)
         w, h = node_helper(node, genes)
-        dist = node.getParentSceneNode().getAttachedObject(0).getBoundingRadius() + node.getAttachedObject(0).getBoundingRadius()
         node.position = (-w, 0, 0)
 
         c += 1
         genes = genome[c]
         # right arm
+        ent_type = pt_sphere if genes['shape'] else pt_cube
         node = rightarm_node = torso_node.createChildSceneNode('RightArm%d' % i)
-        ent = sceneManager.createEntity('RightArm%d' %i, sceneManager.PT_SPHERE)
+        ent = sceneManager.createEntity('RightArm%d' %i, ent_type)
         ent_helper(node, ent, c % 3 + 1)
         w, h = node_helper(node, genes)
-        dist = node.getParentSceneNode().getAttachedObject(0).getBoundingRadius() + node.getAttachedObject(0).getBoundingRadius()
         node.position = (w, 0, 0)
 
         c += 1
         genes = genome[c]
         # left leg
+        ent_type = pt_sphere if genes['shape'] else pt_cube
         node = leftleg_node = torso_node.createChildSceneNode('LeftLeg%d' % i)
-        ent = sceneManager.createEntity('LeftLeg%d' %i, sceneManager.PT_CUBE)
+        ent = sceneManager.createEntity('LeftLeg%d' %i, ent_type)
         ent_helper(node, ent, c % 3 + 1)
         w, h = node_helper(node, genes)
-        dist = node.getParentSceneNode().getAttachedObject(0).getBoundingRadius() + node.getAttachedObject(0).getBoundingRadius()
         node.position = (-w, -h, 0)
 
         c += 1
         genes = genome[c]
         # right leg
+        ent_type = pt_sphere if genes['shape'] else pt_cube
         node = rightleg_node = torso_node.createChildSceneNode('RightLeg%d' % i)
-        ent = sceneManager.createEntity('RightLeg%d' %i, sceneManager.PT_CUBE)
+        ent = sceneManager.createEntity('RightLeg%d' %i, ent_type)
         ent_helper(node, ent, c % 3 + 1)
         w, h = node_helper(node, genes)
-        dist = node.getParentSceneNode().getAttachedObject(0).getBoundingRadius() + node.getAttachedObject(0).getBoundingRadius()
         node.position = (w, -h, 0)
 
 #----------------------------------------#
