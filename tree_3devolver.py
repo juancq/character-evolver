@@ -223,6 +223,7 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
     def keyPressed(self, evt):
 
         if evt.key is OIS.KC_N:
+            #curstudy = 'delta_tree_character3d.yml'
             curstudy = 'tree_character3d.yml'
             l = 6
             ga = evolve.init_iga({'app_name': curstudy, 'geomNodes': l})

@@ -1,16 +1,16 @@
 inherits: [iga.yml]
 stepSize: 1
 population:
-  type: igastandard
+  type: delta_best_ind
   size: 100
   selection: roulette
   combinepop: elitist
   subset:
-    type: best_rand
+    type: best
     size: 12
 crossover:
   type: binarytree
-  prob: 0.8
+  prob: 1.0
   points: 1
 mutation:
   type: binarytree
