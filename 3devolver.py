@@ -197,7 +197,8 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
 
         if evt.key is OIS.KC_N:
             curstudy = 'character3d.yml'
-            l = 6
+            # head, torso, arm, leg
+            l = 4
             ga = evolve.init_iga({'app_name': curstudy, 'geomNodes': l})
             self.genomes = ga.draw()
             self.ga = ga
@@ -375,8 +376,6 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         w, h = node_helper(node, genes)
         node.position = (-w, 0, 0)
 
-        c += 1
-        genes = genome[c]
         # right arm
         ent_type = pt_sphere if genes['shape'] else pt_cube
         node = rightarm_node = torso_node.createChildSceneNode('RightArm%d' % i)
@@ -395,8 +394,6 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         w, h = node_helper(node, genes)
         node.position = (-w, -h, 0)
 
-        c += 1
-        genes = genome[c]
         # right leg
         ent_type = pt_sphere if genes['shape'] else pt_cube
         node = rightleg_node = torso_node.createChildSceneNode('RightLeg%d' % i)
