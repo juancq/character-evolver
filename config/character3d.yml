@@ -1,4 +1,5 @@
 inherits: [iga.yml]
+seed: null
 stepSize: 1
 population:
   type: igastandard

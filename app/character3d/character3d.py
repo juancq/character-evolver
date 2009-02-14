@@ -7,8 +7,12 @@ class Character3d(app.Application):
     def __init__(self, params, random):
         app.Application.__init__(self, params, random)
 
+        print '^'*30
+        print self.attr
         self.geomNodes = params['init_context']['geomNodes']
+        print self.geomNodes, self.geneLen
         self.geneLen *= self.geomNodes
+        print self.geneLen
 
 #-------------------------------------------#
 #    def createPop(self, popsize):        

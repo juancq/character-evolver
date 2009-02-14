@@ -11,38 +11,14 @@ import evolve
 
 SPACE = 1000
 MOVE = 2000
-
-
 NEXTID = 1
 
-#-------------------------------------------#
 def tempName():
     global NEXTID
     id = NEXTID
     NEXTID += 1
     return 't%d'%id
 
-#-------------------------------------------#
-def drawTree(tree, parent_node, sceneManager, node_id):
-    '''
-    Decode bit string.
-    '''
-    if tree is None:
-        return
-    else:
-        genes = tree.decoded_chrom 
-        ent_type = sceneManager.PT_SPHERE if genes['shape'] else sceneManager.PT_CUBE
-        name = 'Node%d_%d' % (node_id, tree.id)
-        child_node = parent_node.createChildSceneNode(name)
-        ent = sceneManager.createEntity(name, ent_type)
-        ent_helper(child_node, ent)
-        _inc_parent = False if tree.isRoot() else True
-        w, h = node_helper(child_node, genes, inc_parent = _inc_parent)
-
-        drawTree(tree.left, child_node, sceneManager, node_id)
-        drawTree(tree.right, child_node, sceneManager, node_id)
-
-#-------------------------------------------#
 class OgreText(object):
     """Class for displaying text in Ogre above a Movable."""
     def __init__(self, movable, camera, text=''):
@@ -155,9 +131,7 @@ def node_helper(cur_node, _genes, inc_parent = True):
     #w2, h2 = get_width_height(p)
     #p = cur_node.getParentSceneNode()
 
-    #print _genes
     width, height = (w1+w2)/2., (h1+h2)/2.
-    cur_node.translate(width*_genes['tx'], height*_genes['ty'], 0)
     return width, height
     #float radius = (size.x > size.z) ? size.z/2.0f : size.x/2.0f;
     #mPlayerWidth = (size.x > size.z) ? size.z : size.x;
@@ -166,7 +140,6 @@ def node_helper(cur_node, _genes, inc_parent = True):
 
 def ent_helper(cur_node, _ent, n = 0):
     #_ent.setMaterialName('Examples/TextureEffect%d' % (node_id % 3 + 1))
-    #_ent.setMaterialName('Examples/OgreLogo')
     _ent.setMaterialName('Examples/Rockwall')
     cur_node.attachObject(_ent)
 
@@ -223,8 +196,7 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
     def keyPressed(self, evt):
 
         if evt.key is OIS.KC_N:
-            #curstudy = 'delta_tree_character3d.yml'
-            curstudy = 'tree_character3d.yml'
+            curstudy = 'character3d.yml'
             l = 6
             ga = evolve.init_iga({'app_name': curstudy, 'geomNodes': l})
             self.genomes = ga.draw()
@@ -326,6 +298,7 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         if len(result) > 0:
             for item in result:
                 if item.movable:
+                    #print 'movable'
                     self.currentObject = item.movable.getParentSceneNode()
                     item.movable.getParentSceneNode().showBoundingBox(True)
                     #print item.movable.getParentSceneNode().getName()
@@ -346,7 +319,6 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
 
         #[root_node.getChild('Individual%d' % i).removeAllChildren() for i in range(9)]
 
-        print self.genomes
         for i, node in enumerate(self.ind_nodes):
             node.removeAndDestroyAllChildren()
             node_genes = self.genomes[i]
@@ -357,8 +329,6 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
             sep_node = sceneManager.getSceneNode('Separator%d' % i)
             sep_node.removeAllChildren()
             ent = sceneManager.createEntity('Separator%d' %i, 'knot.mesh')
-            ent.setMaterialName('Examples/OgreLogo')
-
             sep_node.attachObject(ent)
             t = OgreText(ent, self.camera, '%d' % i)
             t.enable(True)
@@ -366,73 +336,74 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
 
         self.text_overlays = text_overlays
 
-
 #---------------------------------#
-    def makeCharacter(self, node_id, parent_node, genome = None):
+    def makeCharacter(self, node_id, parent_node, genome = []):
         '''
         Create a 3d character with 6 parts: head, torso, 2 arms, 2 legs.
         '''
         sceneManager = self.sceneManager
+        pt_sphere, pt_cube = sceneManager.PT_SPHERE, sceneManager.PT_CUBE
+        c = 0
+        genes = genome[c]
         i = node_id
-        tree = genome
-        drawTree(tree, parent_node, sceneManager, i)
 
-        ## head
-        #ent_type = pt_sphere if genes['shape'] else pt_cube
-        #node = head_node = parent_node.createChildSceneNode('Head%d' % i)
-        #ent = sceneManager.createEntity('Head%d' %i, ent_type)
-        #ent_helper(node, ent, c % 3 + 1)
-        #w, h = node_helper(node, genes, inc_parent = False)
+        # head
+        ent_type = pt_sphere if genes['shape'] else pt_cube
+        node = head_node = parent_node.createChildSceneNode('Head%d' % i)
+        ent = sceneManager.createEntity('Head%d' %i, ent_type)
+        ent_helper(node, ent, c % 3 + 1)
+        #ent.setMaterialName('facial/drbunsen_head')
+        w, h = node_helper(node, genes, inc_parent = False)
 
-        #c += 1
-        #genes = genome[c]
-        ## torso
-        #node = torso_node = head_node.createChildSceneNode('Torso%d' % i)
-        #ent = sceneManager.createEntity('Torso%d' %i, sceneManager.PT_CUBE)
-        #ent_helper(node, ent, c % 3 + 1)
-        #w, h = node_helper(node, genes)
-        #dist = node.getParentSceneNode().getAttachedObject(0).getBoundingRadius() + node.getAttachedObject(0).getBoundingRadius()
-        #node.position = (0, -h, 0)
+        c += 1
+        genes = genome[c]
+        # torso
+        ent_type = pt_sphere if genes['shape'] else pt_cube
+        node = torso_node = head_node.createChildSceneNode('Torso%d' % i)
+        ent = sceneManager.createEntity('Torso%d' %i, ent_type)
+        ent_helper(node, ent, c % 3 + 1)
+        w, h = node_helper(node, genes)
+        node.position = (0, -h, 0)
 
-        #c += 1
-        #genes = genome[c]
-        ## left arm
-        #node = leftarm_node = torso_node.createChildSceneNode('LeftArm%d' % i)
-        #ent = sceneManager.createEntity('LeftArm%d' %i, sceneManager.PT_SPHERE)
-        #ent_helper(node, ent, c % 3 + 1)
-        #w, h = node_helper(node, genes)
-        #dist = node.getParentSceneNode().getAttachedObject(0).getBoundingRadius() + node.getAttachedObject(0).getBoundingRadius()
-        #node.position = (-w, 0, 0)
+        c += 1
+        genes = genome[c]
+        # left arm
+        ent_type = pt_sphere if genes['shape'] else pt_cube
+        node = leftarm_node = torso_node.createChildSceneNode('LeftArm%d' % i)
+        ent = sceneManager.createEntity('LeftArm%d' %i, ent_type)
+        ent_helper(node, ent, c % 3 + 1)
+        w, h = node_helper(node, genes)
+        node.position = (-w, 0, 0)
 
-        #c += 1
-        #genes = genome[c]
-        ## right arm
-        #node = rightarm_node = torso_node.createChildSceneNode('RightArm%d' % i)
-        #ent = sceneManager.createEntity('RightArm%d' %i, sceneManager.PT_SPHERE)
-        #ent_helper(node, ent, c % 3 + 1)
-        #w, h = node_helper(node, genes)
-        #dist = node.getParentSceneNode().getAttachedObject(0).getBoundingRadius() + node.getAttachedObject(0).getBoundingRadius()
-        #node.position = (w, 0, 0)
+        c += 1
+        genes = genome[c]
+        # right arm
+        ent_type = pt_sphere if genes['shape'] else pt_cube
+        node = rightarm_node = torso_node.createChildSceneNode('RightArm%d' % i)
+        ent = sceneManager.createEntity('RightArm%d' %i, ent_type)
+        ent_helper(node, ent, c % 3 + 1)
+        w, h = node_helper(node, genes)
+        node.position = (w, 0, 0)
 
-        #c += 1
-        #genes = genome[c]
-        ## left leg
-        #node = leftleg_node = torso_node.createChildSceneNode('LeftLeg%d' % i)
-        #ent = sceneManager.createEntity('LeftLeg%d' %i, sceneManager.PT_CUBE)
-        #ent_helper(node, ent, c % 3 + 1)
-        #w, h = node_helper(node, genes)
-        #dist = node.getParentSceneNode().getAttachedObject(0).getBoundingRadius() + node.getAttachedObject(0).getBoundingRadius()
-        #node.position = (-w, -h, 0)
+        c += 1
+        genes = genome[c]
+        # left leg
+        ent_type = pt_sphere if genes['shape'] else pt_cube
+        node = leftleg_node = torso_node.createChildSceneNode('LeftLeg%d' % i)
+        ent = sceneManager.createEntity('LeftLeg%d' %i, ent_type)
+        ent_helper(node, ent, c % 3 + 1)
+        w, h = node_helper(node, genes)
+        node.position = (-w, -h, 0)
 
-        #c += 1
-        #genes = genome[c]
-        ## right leg
-        #node = rightleg_node = torso_node.createChildSceneNode('RightLeg%d' % i)
-        #ent = sceneManager.createEntity('RightLeg%d' %i, sceneManager.PT_CUBE)
-        #ent_helper(node, ent, c % 3 + 1)
-        #w, h = node_helper(node, genes)
-        #dist = node.getParentSceneNode().getAttachedObject(0).getBoundingRadius() + node.getAttachedObject(0).getBoundingRadius()
-        #node.position = (w, -h, 0)
+        c += 1
+        genes = genome[c]
+        # right leg
+        ent_type = pt_sphere if genes['shape'] else pt_cube
+        node = rightleg_node = torso_node.createChildSceneNode('RightLeg%d' % i)
+        ent = sceneManager.createEntity('RightLeg%d' %i, ent_type)
+        ent_helper(node, ent, c % 3 + 1)
+        w, h = node_helper(node, genes)
+        node.position = (w, -h, 0)
 
 #----------------------------------------#
 

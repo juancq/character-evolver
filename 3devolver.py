@@ -441,7 +441,7 @@ class TutorialApp(sf.Application):
             ind_node.position = (0, 0, 0)
 
             sep_node = sceneManager.getRootSceneNode().createChildSceneNode('Separator%d' % i)
-            sep_node.position = (i*SPACE, 200, 0)
+            sep_node.position = (i*SPACE, 400, 0)
             sep_node.setScale(0.5, 0.5, 0.5)
 
             ind_nodes.append(ind_node)

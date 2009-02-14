@@ -60,8 +60,14 @@ class Tree_character3d(app.Application):
     def __init__(self, params, random):
         app.Application.__init__(self, params, random)
 
+        #self.geomNodes = params['init_context']['geomNodes']
+        #self.geneLen *= self.geomNodes
+        print '^'*30
+        print self.attr
         self.geomNodes = params['init_context']['geomNodes']
+        print self.geomNodes, self.geneLen
         self.geneLen *= self.geomNodes
+        print self.geneLen
 
 #-------------------------------------------#
     def createPop(self, popsize):        
@@ -75,7 +81,7 @@ class Tree_character3d(app.Application):
             root.setRoot()
             createTree(depth, root)
             counter = 0
-            printTree(counter, root)
+            #printTree(counter, root)
             initTree(root, self.geneLen, self.random)
 
             ind = Individual(self.random, length = 0, genome = root)
@@ -149,6 +155,8 @@ class Tree_character3d(app.Application):
         root = ind.genome
         all_bits = []
         getTreeBits(root, all_bits)
+        print len(all_bits)
+        print len(all_bits[0])
 
         bit_chrome = []
         for sub_list in all_bits:
