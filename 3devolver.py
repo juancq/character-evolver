@@ -270,7 +270,8 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
             transVector.y += self.move
 
 
-        self.cam_node.translate(self.cam_node.orientation * transVector * frameEvent.timeSinceLastFrame)
+        #self.cam_node.translate(self.cam_node.orientation * transVector * frameEvent.timeSinceLastFrame)
+        self.camera.moveRelative(transVector * frameEvent.timeSinceLastFrame)
 
         #if curr_mouse.buttonDown(OIS.MB_Right):
         #    self.cam_node.yaw(ogre.Degree(-self.rotate * curr_mouse.X.rel).valueRadians())
