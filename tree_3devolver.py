@@ -207,6 +207,10 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
 #---------------------------------#
     def mouseMoved(self, evt):
         CEGUI.System.getSingleton().injectMouseMove(evt.get_state().X.rel, evt.get_state().Y.rel)
+        #x = evt.get_state().X.rel
+        #y = evt.get_state().Y.rel
+        #self.cam_node.yaw(ogre.Degree(-self.rotate * x).valueRadians())
+        #self.cam_node.getChild(0).pitch(ogre.Degree(-self.rotate * y).valueRadians())
         return True
 
 #---------------------------------#
@@ -237,8 +241,9 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
             if self.ga and best_selected in self.num_keys:
                 print 'pressed', self.Keyboard.getAsString(evt.key)
                 best_selected = int(best_selected)
-                self.genomes = self.ga.web_step({'feedback': [best_selected]})
-                self.newPop()
+                if best_selected >= 0 and best_selected < 9:
+                    self.genomes = self.ga.web_step({'feedback': [best_selected]})
+                    self.newPop()
         return True
 
 #---------------------------------#
@@ -297,7 +302,8 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
             transVector.y += self.move
 
 
-        self.cam_node.translate(self.cam_node.orientation * transVector * frameEvent.timeSinceLastFrame)
+        #self.cam_node.translate(self.cam_node.orientation * transVector * frameEvent.timeSinceLastFrame)
+        self.camera.moveRelative(transVector * frameEvent.timeSinceLastFrame)
 
         #if curr_mouse.buttonDown(OIS.MB_Right):
         #    self.cam_node.yaw(ogre.Degree(-self.rotate * curr_mouse.X.rel).valueRadians())
@@ -352,7 +358,7 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
             node_genes = self.genomes[i]
             node.position = (0, 0, 0)
             self.makeCharacter(i, node, node_genes)
-            node.position = (i*SPACE, 0, 0)
+            node.position = (i*SPACE, 0, i*SPACE)
 
             sep_node = sceneManager.getSceneNode('Separator%d' % i)
             sep_node.removeAllChildren()
@@ -473,7 +479,7 @@ class TutorialApp(sf.Application):
             ind_node.position = (0, 0, 0)
 
             sep_node = sceneManager.getRootSceneNode().createChildSceneNode('Separator%d' % i)
-            sep_node.position = (i*SPACE, 400, 0)
+            sep_node.position = (i*SPACE, 400, i*SPACE)
             sep_node.setScale(0.5, 0.5, 0.5)
 
             ind_nodes.append(ind_node)

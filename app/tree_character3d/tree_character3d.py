@@ -1,4 +1,3 @@
-import wx
 import app.app as app
 from app.helperfuncs import hamming, lcs
 from iga.individual import Individual

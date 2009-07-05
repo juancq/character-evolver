@@ -1,4 +1,3 @@
-import wx
 from iga.individual import Individual
 from pickle import dumps
 import math
