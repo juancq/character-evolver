@@ -54,6 +54,7 @@ class Population(gastandard.Population):
         if not pop:
             pop = self.pop
 
+        self.params.app.preFitnessEval(None, None)
         fitness_func = self.params.app.fitness
         user_selected = self.user_selected
         for ind in pop:

@@ -5,6 +5,8 @@ import math
 #-------------------------------------------#
 class Application:
     def __init__(self, params, random):
+        self.clear = True
+
         self.random = random
 	self.params = params
 
@@ -178,6 +180,7 @@ class Application:
 
 #-------------------------------------------#
     def preFitnessEval(self, pop, gen):
+        self.clear = True
         pass
 
 #-------------------------------------------#

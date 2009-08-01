@@ -6,8 +6,10 @@ except:
 
 
 
-import random
 import sys
+import random
+import ctypes
+
 sys.path.insert(0,'..')
 import PythonOgreConfig
 
@@ -18,15 +20,14 @@ import SampleFramework as sf
 
 import evolve
 
-SPACE = 1000
-VSPACE = 1400
+SPACE = 250
+VSPACE = 350
 MOVE = 2100
 
 
 NEXTID = 1
-
 NEXTNUM = 1
-
+GEN_COUNTER = 0
 
 #-------------------------------------------#
 def tempName():
@@ -45,13 +46,11 @@ def drawTree(tree, parent_node, sceneManager, node_id):
     '''
     Decode bit string.
     '''
-    all_shapes = [sceneManager.PT_SPHERE, sceneManager.PT_CUBE, 'ogrehead.mesh', 'knot.mesh']
     if tree is None:
         return
     else:
         genes = tree.decoded_chrom 
-        #ent_type = sceneManager.PT_SPHERE if genes['shape'] else sceneManager.PT_CUBE
-        ent_type = all_shapes[int(genes['shape'])]
+        ent_type = sceneManager.PT_SPHERE if genes['shape'] else sceneManager.PT_CUBE
         #name = 'Node%d_%d' % (node_id, (tree.id+random.randrange(0,100)))
         name = 'Node%d_%d' % (node_id, (tree.id+nextNum()))
         child_node = parent_node.createChildSceneNode(name)
@@ -188,16 +187,18 @@ def node_helper(cur_node, _genes, inc_parent = True):
 def ent_helper(cur_node, _ent, n = 0):
     #_ent.setMaterialName('Examples/TextureEffect%d' % (node_id % 3 + 1))
     #_ent.setMaterialName('Examples/OgreLogo')
-    m = 'Examples/Rockwall'
+    #m = 'Examples/Rockwall'
     #m = 'NormalMap'
     #m = 'OceanCg'
     #m = 'RomanBath/OgreStone'
-    #m = 'InflateBody'
+    m = 'InflateBody'
     _ent.setMaterialName(m)
     cur_node.attachObject(_ent)
 
 
 class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
+
+    OBJ_MASK = 1 << 1
 
     def __init__(self, renderWindow, camera, sceneManager, cegui):#, ind_nodes):
         sf.FrameListener.__init__(self, renderWindow, camera, True, True)
@@ -213,25 +214,33 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         self.cegui = cegui
 
         #curstudy = 'delta_tree_character3d.yml'
-        curstudy = 'tree_character3d.yml'
+        curstudy = 'vertex_shader.yml'
         l = 7
         ga = evolve.init_iga({'app_name': curstudy, 'geomNodes': l})
         self.genomes = ga.draw()
         self.ga = ga
 
 
+        # create nodes to hold subset models
         ind_nodes = []
         for i in range(len(self.genomes)):
             ind_node = sceneManager.getRootSceneNode().createChildSceneNode('Individual%d' % i)
             ind_node.position = (0, 0, 0)
 
-            sep_node = sceneManager.getRootSceneNode().createChildSceneNode('Separator%d' % i)
-            sep_node.position = (i*SPACE, 400, i*SPACE)
-            sep_node.setScale(0.5, 0.5, 0.5)
+            #sep_node = sceneManager.getRootSceneNode().createChildSceneNode('Separator%d' % i)
+            #sep_node.position = (i*SPACE, 400, i*SPACE)
+            #sep_node.setScale(0.5, 0.5, 0.5)
 
             ind_nodes.append(ind_node)
 
         self.ind_nodes = ind_nodes
+
+        # create nodes to hold peers subset models
+        peer_nodes = []
+        for i in range(len(self.genomes)):
+            ind_node = sceneManager.getRootSceneNode().createChildSceneNode('Peer%d' % i)
+            ind_node.position = (0, 0, 0)
+            peer_nodes.append(ind_node)
 
 
         # Register as MouseListener (Basic tutorial 5)
@@ -361,8 +370,8 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
 
 #---------------------------------#
     def onLeftPressed(self, evt):
-        #if self.currentObject:
-        #    self.currentObject.showBoundingBox(False)
+        if self.currentObject:
+            self.currentObject.showBoundingBox(False)
  
         # Setup the ray scene query, use CEGUI's mouse position
         mousePos = CEGUI.MouseCursor.getSingleton().getPosition()
@@ -370,16 +379,16 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
                                                       mousePos.d_y / float(evt.get_state().height))
         self.raySceneQuery.setRay(mouseRay)
         self.raySceneQuery.setSortByDistance(True)
-        #self.raySceneQuery.setQueryMask(self.sceneManager.ENTITY_TYPE_MASK)
+        self.raySceneQuery.setQueryMask(self.OBJ_MASK)
  
         # Execute query
         result = self.raySceneQuery.execute()
         if len(result) > 0:
             for item in result:
-                if item.movable:
+                if item.movable and item.movable.getName().startswith('Node'):
                     self.currentObject = item.movable.getParentSceneNode()
-                    item.movable.getParentSceneNode().showBoundingBox(True)
-                    #print item.movable.getParentSceneNode().getName()
+                    print item.movable.getParentSceneNode().getName()
+                    print item.movable.getName()
                     break # We found an existing object
  
         if self.currentObject:
@@ -390,6 +399,24 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         '''
         Create and display a new pop.
         '''
+        global GEN_COUNTER
+        # ----------------------------------------- #
+        for sf in ['cg', 'program', 'material']:
+
+            # dynamic loading of material
+            f= file("gen_%d.%s" % (GEN_COUNTER, sf), 'r')
+            MatString = f.read()
+            f.close()
+            RawMemBuffer = ctypes.create_string_buffer( MatString  ) ## Note it allocates one extra byte
+            ## Now we create the MemoryDataStream using the void pointer to the ctypes buffer
+            dataptr = ogre.MemoryDataStream ( pMem = ogre.CastVoidPtr(ctypes.addressof ( RawMemBuffer )), 
+                    size = len (MatString) + 1 )
+
+            ogre.MaterialManager.getSingleton().parseScript(dataptr, ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME)
+
+        # ----------------------------------------- #
+
+
         text_overlays = []
         sceneManager = self.sceneManager
         sceneManager.destroyAllEntities()
@@ -405,20 +432,22 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
 
         for i, node in enumerate(self.ind_nodes):
             node.removeAndDestroyAllChildren()
-            node_genes = self.genomes[i]
+            #node_genes = self.genomes[i]
             node.position = (0, 0, 0)
-            self.makeCharacter(i, node, node_genes)
+            #self.makeCharacter(i, node, node_genes)
+
+            name = 'Node%d_%d' % (i, (nextNum()))
+            child_node = node.createChildSceneNode(name)
+            ent = sceneManager.createEntity(name, 'ninja.mesh')
+            #m = 'InflateBody'
+            #m = 'InflateBodyX'
+            m = 'gen_%d_ind_%d' % (GEN_COUNTER,i)
+            ent.setMaterialName(m)
+            ent.setQueryFlags(self.OBJ_MASK)
+            node.attachObject(ent)
+
             node.position = (vi*SPACE, vj*VSPACE, vi*SPACE)
 
-            sep_node = sceneManager.getSceneNode('Separator%d' % i)
-            sep_node.removeAllChildren()
-            ent = sceneManager.createEntity('Separator%d' %i, 'knot.mesh')
-            ent.setMaterialName('Examples/OgreLogo')
-
-            sep_node.attachObject(ent)
-            t = OgreText(ent, self.camera, '%d' % i)
-            t.enable(True)
-            text_overlays.append(t)
 
             vi += 1
             j += 1
@@ -426,8 +455,8 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
                 vj -= 1
                 vi = 0
 
-        self.text_overlays = text_overlays
 
+        GEN_COUNTER += 1
 
 #---------------------------------#
     def makeCharacter(self, node_id, parent_node, genome = None):

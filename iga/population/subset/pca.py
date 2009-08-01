@@ -11,6 +11,8 @@ NUM_CLUSTERS = 9
 def subset(pop, rand, size):
     newpop = pop[:]
 
+    NUM_CLUSTERS = size
+
     genomes = array([array(map(float, x.genome)) for x in newpop])
     print genomes.ndim
     pcanode = mdp.nodes.PCANode(output_dim = 2, svd = True)

@@ -11,6 +11,14 @@ class TreeIndividual(Individual):
         Individual.__init__(self, random, genome_len, genome)
 
 
+def compareTrees(tree1, tree2):
+    if tree1 is None or tree2 is None:
+        return 0
+    elif tree1 and tree2:
+        c1 = compareTrees(tree1.left, tree2.left)
+        c2 = compareTrees(tree1.right, tree2.right)
+        return c1+c2+1
+
 def printTree(depth, tree):
 
     if tree is None:
@@ -65,8 +73,8 @@ class Tree_character3d(app.Application):
         print self.attr
         self.geomNodes = params['init_context']['geomNodes']
         print self.geomNodes, self.geneLen
-        self.geneLen *= self.geomNodes
-        print self.geneLen
+        #self.geneLen *= self.geomNodes
+        #print self.geneLen
 
 #-------------------------------------------#
     def createPop(self, popsize):        
@@ -84,6 +92,7 @@ class Tree_character3d(app.Application):
             initTree(root, self.geneLen, self.random)
 
             ind = Individual(self.random, length = 0, genome = root)
+            self.decode(ind)
             pop.append(ind)
 
         return pop
@@ -98,10 +107,35 @@ class Tree_character3d(app.Application):
         [best]
         '''
         best = user_feedback[0]
-        self.decode(ind)
-        self.decode(best)
-        ind.fitness = hamming(ind.bit_chrome, best.bit_chrome)
+        if self.clear:
+            self.decode(best)
+            self.clear = False
 
+        self.decode(ind)
+        f1 = hamming(ind.bit_chrome, best.bit_chrome)
+        f1 /= float(len(ind.bit_chrome))
+
+
+        ind_root = ind.decoded_data
+        ind_root.stats()
+
+        best_root = best.decoded_data
+        best_root.stats()
+
+        
+        f3 = compareTrees(ind_root, best_root)
+        f3 /= float(max(ind_root.num_children, best_root.num_children)+1)
+
+
+        f2 = 0
+
+        #print 'comp: ', f3, f1
+        #d = 0
+        #printTree(d, ind_root)
+        #printTree(d, best_root)
+
+
+        ind.fitness = (f1*2 + f2 + f3) * 100
 
 #-------------------------------------------#
     def draw(self, subset, context):
@@ -109,6 +143,7 @@ class Tree_character3d(app.Application):
         Return a list of panels to be displayed to the user for evaluation.
         Use the arg parentPanel as the parent for each of the panels created.
         '''
+        print 'called first'
         return [self.decode(ind) for ind in subset]
 
 #-------------------------------------------#
@@ -154,8 +189,7 @@ class Tree_character3d(app.Application):
         root = ind.genome
         all_bits = []
         getTreeBits(root, all_bits)
-        print len(all_bits)
-        print len(all_bits[0])
+        #print len(all_bits),len(all_bits[0])
 
         bit_chrome = []
         for sub_list in all_bits:

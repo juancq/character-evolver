@@ -1,23 +1,23 @@
 inherits: [iga.yml]
 seed: null
-stepSize: 5
+stepSize: 4
 population:
   type: igastandard
-  size: 100
+  size: 50
   selection: roulette
   combinepop: elitist
   subset:
     type: best
-    size: 30
+    size: 9
 crossover:
-  type: binarytree
+  type: gen_prog
   prob: 0.8
   points: 1
 mutation:
-  type: binarytree
+  type: gen_prog
   prob: 0.20
 application:
-  name: tree_character3d
+  name: vertex_shader
   vars:
     - name: shape
       max: 3.

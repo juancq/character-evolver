@@ -6,15 +6,16 @@ import mdp
 from scipy.cluster.vq import *
 from scipy import array
 
-NUM_CLUSTERS = 6
+NUM_CLUSTERS = 9
 
 
 def subset(pop, rand, size):
     newpop = pop[:]
 
+    NUM_CLUSTERS = size
     # convert list
     lens = [len(x.bit_chrome) for x in pop]
-    uni_len = max(lens)
+    uni_len = min(lens)
     var_genomes = [x.bit_chrome for x in pop]
     for i in range(len(var_genomes)):
         var_genomes[i].extend([0 for i in range(uni_len-len(var_genomes[i]))])
@@ -74,4 +75,5 @@ def subset(pop, rand, size):
     #for ind in subset:
     #    newindex.append(pop.index(ind))
 
+    print len(subset)
     return subset, newindex
