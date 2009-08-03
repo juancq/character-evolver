@@ -45,6 +45,10 @@ def drawTree(tree, parent_node, sceneManager, node_id):
     '''
     Decode bit string.
     '''
+
+#all_shapes = [sceneManager.PT_SPHERE, sceneManager.PT_CUBE, 'Barrel.mesh','column.mesh','facial.mesh','fish.mesh','jaiqua.mesh','knot.mesh','ogrehead.mesh','razor.mesh']
+
+#all_shapes = [sceneManager.PT_SPHERE, sceneManager.PT_CUBE, 'athene.mesh','Barrel.mesh','column.mesh','cube.mesh','facial.mesh','fish.mesh','geosphere4500.mesh','geosphere8000.mesh','jaiqua.mesh','knot.mesh','ninja.mesh','ogrehead.mesh','razor.mesh','robot.mesh','RZR-002.mesh','sphere.mesh','tudorhouse.mesh','WoodPallet.mesh']
     all_shapes = [sceneManager.PT_SPHERE, sceneManager.PT_CUBE, 'ogrehead.mesh', 'knot.mesh']
     if tree is None:
         return

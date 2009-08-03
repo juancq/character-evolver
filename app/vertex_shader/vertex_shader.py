@@ -120,7 +120,18 @@ class Vertex_shader(app.Application):
         {
                 param_named_auto        time            costime_0_2pi 2
                 param_named             factor          float 10
+                param_named_auto lightPos[0] light_position 0
+                param_named_auto lightPos[1] light_position 1
+                param_named_auto lightDiffuseColour[0] light_diffuse_colour 0
+                param_named_auto lightDiffuseColour[1] light_diffuse_colour 1
+                param_named_auto ambient ambient_light_colour
         }
+
+        texture_unit
+        {
+            texture nskingr.jpg
+        }
+
         }\n}\n}
 '''
 
@@ -134,19 +145,42 @@ class Vertex_shader(app.Application):
 
         cg_open = '''in float4  position        : POSITION,
                 in float3 normal        : NORMAL,
+                in float2 uv       : TEXCOORD0,
                 out float4 oPosition    : POSITION,
                 out float4 oColor       : COLOR,
+                out float2 oUv       : TEXCOORD0,
                 uniform float4x4 worldViewProj,
                 uniform float time,
-                uniform float factor
+                uniform float factor,
+                uniform float4   lightPos[2],
+                uniform float4   lightDiffuseColour[2],
+                uniform float4   ambient
                 )
 {
     float4 p = position;
 '''
         cg_close = '''
+
+
     oPosition = mul(worldViewProj, p);
-    oColor.rgb = 0.5*normal+0.5;
-    oColor.a = 1.0;
+
+    //oColor.rgb = 0.5*normal+0.5;
+    //oColor.a = 1.0;
+
+    // transform normal
+    //float3 norm = mul(worldViewProj, normal);
+    float3 norm = normal;
+    // Lighting - support point and directional
+    float3 lightDir0 = 	normalize(
+            lightPos[0].xyz -  (p.xyz * lightPos[0].w));
+    float3 lightDir1 = 	normalize(
+            lightPos[1].xyz -  (p.xyz * lightPos[1].w));
+
+    oUv = uv;
+    oColor = ambient + 
+            (saturate(dot(lightDir0, norm)) * lightDiffuseColour[0]) + 
+            (saturate(dot(lightDir1, norm)) * lightDiffuseColour[1]);
+    
 }\n
 '''
 
@@ -168,7 +202,7 @@ class Vertex_shader(app.Application):
             cg.write(cg_open)
             print '%s += %s + cos(time);' % (ind.tree.eq_picked, ind.decoded)
 
-            cg.write('%s += %s + cos(time);' % (ind.tree.eq_picked, ind.decoded))
+            cg.write('%s += %s + cos(time) + factor;' % (ind.tree.eq_picked, ind.decoded))
             #cg.write('p.xyz += %s + cos(time);' % ind.decoded)
             #cg.write('p.x += 8*sin(%d*9+time+factor*p.y);' % i)
             #cg.write('p.y -= 2*cos(%d*9+time+factor);' % i)
