@@ -1,5 +1,9 @@
 from pickle import loads
 import random as rnd
+import peernode
+import xmlrpclib
+from socket import setdefaulttimeout
+setdefaulttimeout(2.)
 
 #-------------------------------------------#
 class CommonParams:
@@ -12,6 +16,8 @@ class CommonParams:
     def __init__(self):
         self.ga = None
         self.params = None
+        self.peer_list = None
+        self.server_thread = None
         self.app_name = None
         self.yaml_file = None
         self.dirty = False
@@ -26,6 +32,8 @@ class CommonParams:
             del self.ga
         self.ga = None
         self.params = None
+        self.peer_list = None
+        self.server_thread = None
         self.app_name = None
         self.yaml_file = None
         self.dirty = False
@@ -36,7 +44,7 @@ class CommonParams:
         return yaml
 
 #-------------------------------------------#
-    def fileArgs(self, yaml_file):
+    def fileArgs(self, yaml_file, collaborate = False, tag = None):
         '''
         Parse config files.
         '''
@@ -88,17 +96,43 @@ class CommonParams:
         '''
         Kill running server.
         '''
-        if self.dirty:
-            self.yaml_file
-            f = open(self.yaml_file, 'r')
-            params = f.readlines()
-            f.close()
+        if self.server_thread:
+            import time
+            proxy = xmlrpclib.Server("http://localhost:%i" % self.params['port'])
+            # The first call sets the kill flag
+            proxy.__kill__()
+            time.sleep(.1)
+            # because of racing conditions we may have to call
+            # kill again to terminate the server
+            try:
+                proxy.__kill__()
+            except:
+                pass
+            del(proxy)
+            self.server_thread.join()
 
-            f = open(self.yaml_file, 'w')
-            for line in params:
-                f.write(line)
-            f.close()
+#-------------------------------------------#
+    def pingPeers(self):
+        return all(peer.online() for peer in self.peer_list)
 
+#-------------------------------------------#
+    def createPeers(self):
+        '''
+        Create connections to each peer.
+        '''
+        from p2p import serverthread
+        self.server_thread = serverthread.ServerThread()
+        self.server_thread.start()
+
+        if self.peer_list is None:
+            if self.params.has_key('peers'):
+                peer_list = []
+                for peer in self.params['peers']:
+                    peer_list.append(peernode.PeerNode(peer, self.app_name))
+
+                self.peer_list = peer_list
+        else:
+            self.peer_list = []
 
 #-------------------------------------------#
     def getGARates(self):
@@ -138,11 +172,6 @@ class CommonParams:
         Get variable from the attributes dictionary. To keep from accessing the dictionary
         directly.
         '''
-        x = self.params
-        g = self.ga
-        app = self.app_name
-        yf = self.yaml_file
-        dirty = self.dirty
         if name == 'crossover_prob':
             return self.params['crossover']['prob']
         elif name == 'mutation_prob':
@@ -201,14 +230,19 @@ class CommonParams:
         self.params['application']['init_context'] = context
         from iga import IGA
         self.ga = IGA(self.params)
+        self.createPeers()
 
 #-------------------------------------------#
     def onRun(self, display_panel):
         '''
         Called when GA is created.
         '''
+        self.params['current_gen'] = 0
+
         from iga import IGA
         self.ga = IGA(self.params)
+
+        self.createPeers()
 
         return self.ga.run(display_panel)
 
@@ -252,6 +286,19 @@ class CommonParams:
     def callAppSlot(self, slot, args):
         self.ga.callAppSlot(slot, args)
 
+#-------------------------------------------#
+    def getNGenomes(self, genome_num):
+        '''
+        Used by the peer handler.
+        Returns a list of genomes to be displayed
+        on the screen of the requesting peer.
+        '''
+        subset = self.ga.getSubset()
+        # just return the subset displayed on the peers' screens
+
+        #random_inds = self.ga.getNRandom(len(subset))
+        #subset.extend(random_inds)
+        return subset, self.app_name
 
 #-------------------------------------------#
     def getPop(self):
@@ -270,6 +317,12 @@ class CommonParams:
         '''
         user_feedback = context.get('feedback', [])
         inject_genomes = context.get('inject_genomes', {})
+        inject_genomes = {'genomes': None, 'best': None}
+
+        # get from peers
+
+        # end from peers
+
         print 'user_feedback', user_feedback
         return self.ga.step(user_feedback, inject_genomes, context)
 

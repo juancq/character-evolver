@@ -41,26 +41,6 @@ def nextNum():
     NEXTNUM += 13
     return NEXTNUM
 
-#-------------------------------------------#
-def drawTree(tree, parent_node, sceneManager, node_id):
-    '''
-    Decode bit string.
-    '''
-    if tree is None:
-        return
-    else:
-        genes = tree.decoded_chrom 
-        ent_type = sceneManager.PT_SPHERE if genes['shape'] else sceneManager.PT_CUBE
-        #name = 'Node%d_%d' % (node_id, (tree.id+random.randrange(0,100)))
-        name = 'Node%d_%d' % (node_id, (tree.id+nextNum()))
-        child_node = parent_node.createChildSceneNode(name)
-        ent = sceneManager.createEntity(name, ent_type)
-        ent_helper(child_node, ent)
-        _inc_parent = False if tree.isRoot() else True
-        w, h = node_helper(child_node, genes, inc_parent = _inc_parent)
-
-        drawTree(tree.left, child_node, sceneManager, node_id)
-        drawTree(tree.right, child_node, sceneManager, node_id)
 
 #-------------------------------------------#
 class OgreText(object):
@@ -241,6 +221,7 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
             ind_node = sceneManager.getRootSceneNode().createChildSceneNode('Peer%d' % i)
             ind_node.position = (0, 0, 0)
             peer_nodes.append(ind_node)
+        self.peer_nodes = peer_nodes
 
 
         # Register as MouseListener (Basic tutorial 5)
@@ -251,11 +232,17 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         self.move = MOVE
 
         self.currentObject = None
+
+        self.best_selected = {'index': None, 'individual': None}
+        self.peer_selected = {}
+
         self.raySceneQuery = None
         self.raySceneQuery = self.sceneManager.createRayQuery(ogre.Ray())
 
 
         self.num_keys = ['%d' % i for i in range(10)]
+
+        self.all_online = False
 
 #---------------------------------#
     def mouseMoved(self, evt):
@@ -282,6 +269,28 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         if evt.key is OIS.KC_N:
             self.newPop()
 
+        elif evt.key is OIS.KC_RETURN:
+            print 'the best selected are ', self.best_selected
+            print 'from peers', self.peer_selected
+            if self.best_selected:
+                b_index = self.best_selected['index']
+                inject = self.peer_selected.keys()
+
+                self.genomes = self.ga.web_step({'feedback': [b_index], 'inject_genomes': inject})
+
+                self.best_selected['individual'].showBoundingBox(False)
+                self.best_selected['index'] = None
+                self.best_selected['individual'] = None
+
+                for ind in self.peer_selected.values(): ind.showBoundingBox(False)
+                self.peer_selected = {}
+
+                self.newPop()
+
+        elif evt.key is OIS.KC_R:
+            self.all_online = self.ga.pingPeers()
+            print 'result', self.all_online
+
         elif evt.key is not OIS.KC_ESCAPE:
             best_selected = self.Keyboard.getAsString(evt.key)
             if self.ga and best_selected in self.num_keys:
@@ -291,6 +300,10 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
                 if best_selected >= 0 and best_selected < 9:
                     self.genomes = self.ga.web_step({'feedback': [best_selected]})
                     self.newPop()
+
+        else:
+            self.ga.exit()
+
         return True
 
 #---------------------------------#
@@ -370,8 +383,6 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
 
 #---------------------------------#
     def onLeftPressed(self, evt):
-        if self.currentObject:
-            self.currentObject.showBoundingBox(False)
  
         # Setup the ray scene query, use CEGUI's mouse position
         mousePos = CEGUI.MouseCursor.getSingleton().getPosition()
@@ -385,14 +396,45 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         result = self.raySceneQuery.execute()
         if len(result) > 0:
             for item in result:
-                if item.movable and item.movable.getName().startswith('Node'):
-                    self.currentObject = item.movable.getParentSceneNode()
-                    print item.movable.getParentSceneNode().getName()
-                    print item.movable.getName()
-                    break # We found an existing object
+                if item.movable:
+                    name = item.movable.getName()
+                    # if model
+                    if name.startswith('Node') or name.startswith('Peer'):
+                        cur_object = item.movable.getParentSceneNode()
+                        print item.movable.getParentSceneNode().getName()
+                        print item.movable.getName()
+
+                        ind_index = int(name.split('_')[1])
+                        # my own model
+                        if name.startswith('Node'):
+                            # unselect individual
+                            if self.best_selected['individual']:
+                                self.best_selected['individual'].showBoundingBox(False)
+                                # if selecting same individual, clear selection
+                                if ind_index == self.best_selected['index']:
+                                    self.best_selected['individual'] =  None
+                                    self.best_selected['index'] =  -1
+                                else:
+                                    cur_object.showBoundingBox(True)
+                                    self.best_selected['individual'] = cur_object
+                                    self.best_selected['index'] = ind_index
+                            else:
+                                cur_object.showBoundingBox(True)
+                                self.best_selected['individual'] = cur_object
+                                self.best_selected['index'] = ind_index
+
+                        # model belonging to peers
+                        else:
+                            found = self.peer_selected.get(ind_index, None)
+                            if found:
+                                cur_object.showBoundingBox(False)
+                                self.peer_selected.pop(ind_index)
+                            else:
+                                cur_object.showBoundingBox(True)
+                                self.peer_selected[ind_index] = cur_object
+
+                        break # We found an existing object
  
-        if self.currentObject:
-            self.currentObject.showBoundingBox(True)
 
 #----------------------------------------#
     def newPop(self):
@@ -436,7 +478,7 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
             node.position = (0, 0, 0)
             #self.makeCharacter(i, node, node_genes)
 
-            name = 'Node%d_%d' % (i, (nextNum()))
+            name = 'Node_%d_%d' % (i, (nextNum()))
             child_node = node.createChildSceneNode(name)
             ent = sceneManager.createEntity(name, 'ninja.mesh')
             #m = 'InflateBody'
@@ -456,78 +498,40 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
                 vi = 0
 
 
+        j = 0
+        vj = 0
+        vi = 0
+        offset = SPACE * 4
+
+        for i, node in enumerate(self.peer_nodes):
+            node.removeAndDestroyAllChildren()
+            #node_genes = self.genomes[i]
+            node.position = (0, 0, 0)
+            #self.makeCharacter(i, node, node_genes)
+
+            name = 'Peer_%d_%d' % (i, (nextNum()))
+            child_node = node.createChildSceneNode(name)
+            ent = sceneManager.createEntity(name, 'ninja.mesh')
+
+            m = 'gen_%d_ind_%d' % (GEN_COUNTER,i)
+            ent.setMaterialName(m)
+            ent.setQueryFlags(self.OBJ_MASK)
+            node.attachObject(ent)
+
+            node.position = (vi*SPACE + offset, vj*VSPACE, vi*SPACE + offset)
+
+
+            vi += 1
+            j += 1
+            if j % 3 == 0:
+                vj -= 1
+                vi = 0
+
+
         GEN_COUNTER += 1
 
-#---------------------------------#
-    def makeCharacter(self, node_id, parent_node, genome = None):
-        '''
-        Create a 3d character with 6 parts: head, torso, 2 arms, 2 legs.
-        '''
-        sceneManager = self.sceneManager
-        i = node_id
-        tree = genome
-        drawTree(tree, parent_node, sceneManager, i)
-
-        ## head
-        #ent_type = pt_sphere if genes['shape'] else pt_cube
-        #node = head_node = parent_node.createChildSceneNode('Head%d' % i)
-        #ent = sceneManager.createEntity('Head%d' %i, ent_type)
-        #ent_helper(node, ent, c % 3 + 1)
-        #w, h = node_helper(node, genes, inc_parent = False)
-
-        #c += 1
-        #genes = genome[c]
-        ## torso
-        #node = torso_node = head_node.createChildSceneNode('Torso%d' % i)
-        #ent = sceneManager.createEntity('Torso%d' %i, sceneManager.PT_CUBE)
-        #ent_helper(node, ent, c % 3 + 1)
-        #w, h = node_helper(node, genes)
-        #dist = node.getParentSceneNode().getAttachedObject(0).getBoundingRadius() + node.getAttachedObject(0).getBoundingRadius()
-        #node.position = (0, -h, 0)
-
-        #c += 1
-        #genes = genome[c]
-        ## left arm
-        #node = leftarm_node = torso_node.createChildSceneNode('LeftArm%d' % i)
-        #ent = sceneManager.createEntity('LeftArm%d' %i, sceneManager.PT_SPHERE)
-        #ent_helper(node, ent, c % 3 + 1)
-        #w, h = node_helper(node, genes)
-        #dist = node.getParentSceneNode().getAttachedObject(0).getBoundingRadius() + node.getAttachedObject(0).getBoundingRadius()
-        #node.position = (-w, 0, 0)
-
-        #c += 1
-        #genes = genome[c]
-        ## right arm
-        #node = rightarm_node = torso_node.createChildSceneNode('RightArm%d' % i)
-        #ent = sceneManager.createEntity('RightArm%d' %i, sceneManager.PT_SPHERE)
-        #ent_helper(node, ent, c % 3 + 1)
-        #w, h = node_helper(node, genes)
-        #dist = node.getParentSceneNode().getAttachedObject(0).getBoundingRadius() + node.getAttachedObject(0).getBoundingRadius()
-        #node.position = (w, 0, 0)
-
-        #c += 1
-        #genes = genome[c]
-        ## left leg
-        #node = leftleg_node = torso_node.createChildSceneNode('LeftLeg%d' % i)
-        #ent = sceneManager.createEntity('LeftLeg%d' %i, sceneManager.PT_CUBE)
-        #ent_helper(node, ent, c % 3 + 1)
-        #w, h = node_helper(node, genes)
-        #dist = node.getParentSceneNode().getAttachedObject(0).getBoundingRadius() + node.getAttachedObject(0).getBoundingRadius()
-        #node.position = (-w, -h, 0)
-
-        #c += 1
-        #genes = genome[c]
-        ## right leg
-        #node = rightleg_node = torso_node.createChildSceneNode('RightLeg%d' % i)
-        #ent = sceneManager.createEntity('RightLeg%d' %i, sceneManager.PT_CUBE)
-        #ent_helper(node, ent, c % 3 + 1)
-        #w, h = node_helper(node, genes)
-        #dist = node.getParentSceneNode().getAttachedObject(0).getBoundingRadius() + node.getAttachedObject(0).getBoundingRadius()
-        #node.position = (w, -h, 0)
 
 #----------------------------------------#
-
-
 
 class TutorialApp(sf.Application):
 
@@ -538,25 +542,6 @@ class TutorialApp(sf.Application):
         self.ceguiSystem = CEGUI.System(self.ceguiRenderer)
         sceneManager = self.sceneManager
         sceneManager.ambientLight = 0.75, 0.75, 0.75
-
-
-        #ind_nodes = []
-        #for i in range(9):
-        #    node_genes = self.genomes[i]
-        #    ind_node = sceneManager.getRootSceneNode().createChildSceneNode('Individual%d' % i)
-        #    ind_node.position = (0, 0, 0)
-        #    self.makeCharacter(i, ind_node, node_genes)
-        #    ind_node.position = (i*SPACE, 0, 0)
-
-        #    sep_node = sceneManager.getRootSceneNode().createChildSceneNode('Separator%d' % i)
-        #    sep_node.position = (i*SPACE, 200, 0)
-        #    sep_node.setScale(0.5, 0.5, 0.5)
-        #    ent = sceneManager.createEntity('Separator%d' %i, 'knot.mesh')
-        #    sep_node.attachObject(ent)
-
-        #    ind_nodes.append(ind_node)
-
-        #self.ind_nodes = ind_nodes
 
 
         light = sceneManager.createLight('Light1')
