@@ -113,9 +113,10 @@ class MyProg(ProgOrganism):
         'cos' : cos,
         'tan' : tan,
         }
-    vars = ['p.x', 'p.y', 'p.z', 'time', 'factor']
+    vars = ['p.x', 'p.y', 'p.z', 'time', 'factor']# ,'time', 'time', 'time']
     consts = [0.0, 0.5, 1.0, 2.0, 5.0, 10.0]
     eqs = ['p.x', 'p.y', 'p.z', 'p.xyz']
+    #eqs = ['p.xyz']
 
 
     mutProb = 0.01

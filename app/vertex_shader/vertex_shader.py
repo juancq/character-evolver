@@ -99,7 +99,9 @@ class Vertex_shader(app.Application):
         ind.fitness = fit
         print 'fitness ', fit
 
-        if len(ind_genome) > 10:
+        if ind.genome == best.genome:
+            ind.fitness *= 2
+        elif len(ind_genome) > 10:
             ind.fitness *= 0.5
 
 #-------------------------------------------#
@@ -108,12 +110,17 @@ class Vertex_shader(app.Application):
         Return a list of panels to be displayed to the user for evaluation.
         Use the arg parentPanel as the parent for each of the panels created.
         '''
+        prefix = 'gen'
         global GEN_COUNTER
+        if context.has_key('peer_genomes'):
+            prefix = 'peer_gen'
+            GEN_COUNTER -= 1
+
         gen = GEN_COUNTER
 
-        material = open('gen_%d.material' % gen, 'w')
-        program = open('gen_%d.program' % gen, 'w')
-        cg = open('gen_%d.cg' % gen, 'w')
+        material = open('%s_%d.material' % (prefix, gen), 'w')
+        program = open('%s_%d.program' % (prefix, gen), 'w')
+        cg = open('%s_%d.cg' % (prefix, gen), 'w')
 
         mbody_open = '{\n\ttechnique\n{\n\tpass\n{\n\t'
         mbody_close = '''
@@ -186,23 +193,27 @@ class Vertex_shader(app.Application):
 
         #for i,ind in enumerate(subset):
         for i,ind in enumerate(subset):
-            mname = 'gen_%d_ind_%d' % (gen, i)
+            mname = '%s_%d_ind_%d' % (prefix, gen, i)
             material.write('material %s\n' % mname)
             material.write(mbody_open)
             material.write('vertex_program_ref %s' % mname)
             material.write(mbody_close + '\n')
 
             program.write('vertex_program %s cg\n' %  mname)
-            program.write('{\n\tsource gen_%d.cg\n' % gen)
+            program.write('{\n\tsource %s_%d.cg\n' % (prefix, gen))
             program.write('entry_point ind_%d_vp\n' % i)
             program.write(pbody_close)
 
 
             cg.write('void ind_%d_vp(' % i)
             cg.write(cg_open)
-            print '%s += %s + cos(time);' % (ind.tree.eq_picked, ind.decoded)
+            #print '%s += %s + cos(time);' % (ind.tree.eq_picked, ind.decoded)
 
-            cg.write('%s += %s + cos(time) + factor;' % (ind.tree.eq_picked, ind.decoded))
+            for eq in ind.tree.eq_picked:
+                cg.write('%s += %s;' % (eq, ind.decoded))
+
+            #cg.write('%s += %s;' % (ind.tree.eq_picked, ind.decoded))
+
             #cg.write('p.xyz += %s + cos(time);' % ind.decoded)
             #cg.write('p.x += 8*sin(%d*9+time+factor*p.y);' % i)
             #cg.write('p.y -= 2*cos(%d*9+time+factor);' % i)
@@ -213,7 +224,6 @@ class Vertex_shader(app.Application):
         material.close()
         program.close()
         cg.close()
-
 
         GEN_COUNTER += 1
 

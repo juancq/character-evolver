@@ -307,6 +307,32 @@ class CommonParams:
         '''
         return self.ga.getPop()
 
+
+#-------------------------------------------#
+    def get_peer_genomes(self):
+        subset_size = self.getVar('population')['subset']['size']
+        peer_list = self.peer_list
+        if peer_list:
+            to_draw = []
+            must = []
+
+            for peer in peer_list:
+                if peer.online():
+                    genome_objs = peer.getGenomes()
+                    if genome_objs:
+                        must.append(genome_objs[0])
+                        to_draw.extend(genome_objs[1:])
+
+            subset = must + rnd.sample(to_draw, subset_size-len(must))
+            self.draw_peers({'peer_genomes': subset})
+            self.peer_subset = subset
+
+        else:
+            return []
+
+
+
+
 #-------------------------------------------#
     #def web_step(self, user_feedback, inject_genomes = None):
     def web_step(self, context = {}):

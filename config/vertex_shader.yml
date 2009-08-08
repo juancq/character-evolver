@@ -1,22 +1,22 @@
 inherits: [iga.yml]
 seed: null
-stepSize: 4
+stepSize: 2
 peers: ['amit.cse.unr.edu']
 population:
   type: igastandard
   size: 50
-  selection: roulette
+  selection: tournament
   combinepop: elitist
   subset:
     type: best
     size: 9
 crossover:
   type: gen_prog
-  prob: 0.8
+  prob: 0.7
   points: 1
 mutation:
   type: gen_prog
-  prob: 0.20
+  prob: 0.05
 application:
   name: vertex_shader
   vars:

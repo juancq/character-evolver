@@ -20,9 +20,9 @@ import SampleFramework as sf
 
 import evolve
 
-SPACE = 250
-VSPACE = 350
-MOVE = 2100
+SPACE = 150
+VSPACE = 300
+MOVE = 500
 
 
 NEXTID = 1
@@ -143,39 +143,6 @@ def get_width_height(cur_node):
     return width, height
 
 
-def node_helper(cur_node, _genes, inc_parent = True):
-    cur_node.yaw(ogre.Degree(_genes['yaw']))
-    cur_node.pitch(ogre.Degree(_genes['pitch']))
-    cur_node.roll(ogre.Degree(_genes['roll']))
-    cur_node.setScale(_genes['sx'], _genes['sy'], _genes['sz'])
-    #cur_node.showBoundingBox(True)
-
-    w1, h1 = get_width_height(cur_node)
-    w2, h2 = get_width_height(cur_node.getParentSceneNode()) if inc_parent else (0,0)
-    #w2, h2 = get_width_height(p)
-    #p = cur_node.getParentSceneNode()
-
-    #print _genes
-    width, height = (w1+w2)/2., (h1+h2)/2.
-    cur_node.translate(width*_genes['tx'], height*_genes['ty'], 0)
-    return width, height
-    #float radius = (size.x > size.z) ? size.z/2.0f : size.x/2.0f;
-    #mPlayerWidth = (size.x > size.z) ? size.z : size.x;
-    #mPlayerHeight = size.y;
-
-
-def ent_helper(cur_node, _ent, n = 0):
-    #_ent.setMaterialName('Examples/TextureEffect%d' % (node_id % 3 + 1))
-    #_ent.setMaterialName('Examples/OgreLogo')
-    #m = 'Examples/Rockwall'
-    #m = 'NormalMap'
-    #m = 'OceanCg'
-    #m = 'RomanBath/OgreStone'
-    m = 'InflateBody'
-    _ent.setMaterialName(m)
-    cur_node.attachObject(_ent)
-
-
 class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
 
     OBJ_MASK = 1 << 1
@@ -200,28 +167,63 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         self.genomes = ga.draw()
         self.ga = ga
 
+        j, vj, vi, offset = 0, 0, 0, SPACE * 4
 
-        # create nodes to hold subset models
+        # create nodes to hold subset models and peers
+        peer_nodes = []
         ind_nodes = []
         for i in range(len(self.genomes)):
-            ind_node = sceneManager.getRootSceneNode().createChildSceneNode('Individual%d' % i)
-            ind_node.position = (0, 0, 0)
+
+            name = 'Node_%d_%d' % (i, (nextNum()))
+            ent = sceneManager.createEntity(name, 'ninja.mesh')
+            ent.setQueryFlags(self.OBJ_MASK)
+
+            node = sceneManager.getRootSceneNode().createChildSceneNode('Individual%d' % i)
+            node.attachObject(ent)
+            node.position = (vi*SPACE, vj*VSPACE, vi*SPACE)
+            # incremental diagonal placement
+            #node.position = (vi*SPACE, vj*VSPACE, 0)
+            node.yaw(-180)
 
             #sep_node = sceneManager.getRootSceneNode().createChildSceneNode('Separator%d' % i)
-            #sep_node.position = (i*SPACE, 400, i*SPACE)
-            #sep_node.setScale(0.5, 0.5, 0.5)
+            #sep_node.position = (0,0,0)
+            #sep_node.setScale(0.25, 0.25, 0.25)
 
-            ind_nodes.append(ind_node)
+            #ent = sceneManager.createEntity('Separator%d' %i, 'knot.mesh')
+            #ent.setMaterialName('Examples/OgreLogo')
+            #sep_node.attachObject(ent)
+            #sep_node.setVisible(True)
+            #sep_node.position = (vi*SPACE, vj*VSPACE + offset, vi*SPACE + offset)
+
+
+            name = 'Peer_%d_%d' % (i, (nextNum()))
+            ent = sceneManager.createEntity(name, 'ninja.mesh')
+            ent.setQueryFlags(self.OBJ_MASK)
+
+            p_node = sceneManager.getRootSceneNode().createChildSceneNode('Peer%d' % i)
+            p_node.attachObject(ent)
+            p_node.position = (vi*SPACE + offset, vj*VSPACE, vi*SPACE + offset)
+            p_node.yaw(-180)
+            p_node.setVisible(True)
+
+            vi += 1
+            j += 1
+            if j % 3 == 0:
+                vj -= 1
+                vi = 0
+
+            ind_nodes.append(node)
+            peer_nodes.append(p_node)
 
         self.ind_nodes = ind_nodes
-
-        # create nodes to hold peers subset models
-        peer_nodes = []
-        for i in range(len(self.genomes)):
-            ind_node = sceneManager.getRootSceneNode().createChildSceneNode('Peer%d' % i)
-            ind_node.position = (0, 0, 0)
-            peer_nodes.append(ind_node)
         self.peer_nodes = peer_nodes
+
+        # add screen splitter
+        split = sceneManager.getRootSceneNode().createChildSceneNode('ScreenSplit')
+        ent = sceneManager.createEntity('SplitMesh', 'column.mesh')
+        split.attachObject(ent)
+        split.position = (3*SPACE, -SPACE*2, 3*SPACE)
+        split.setScale(0.25, 5.0, 0.25)
 
 
         # Register as MouseListener (Basic tutorial 5)
@@ -243,6 +245,7 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         self.num_keys = ['%d' % i for i in range(10)]
 
         self.all_online = False
+        self.collaborate = False
 
 #---------------------------------#
     def mouseMoved(self, evt):
@@ -278,6 +281,9 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
 
                 self.genomes = self.ga.web_step({'feedback': [b_index], 'inject_genomes': inject})
 
+                if self.collaborate:
+                    self.peer_genomes = self.ga.get_peer_genomes()
+
                 self.best_selected['individual'].showBoundingBox(False)
                 self.best_selected['index'] = None
                 self.best_selected['individual'] = None
@@ -288,8 +294,22 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
                 self.newPop()
 
         elif evt.key is OIS.KC_R:
+            self.collaborate = True
             self.all_online = self.ga.pingPeers()
             print 'result', self.all_online
+
+        elif evt.key is OIS.KC_J:
+        # save best
+            if self.best_selected:
+                global GEN_COUNTER
+                if GEN_COUNTER > 0:
+                    b_index = self.best_selected['index']
+                    f = open('save_best', 'w')
+                    t = GEN_COUNTER
+                    t -= self.ga.getVar('stepSize')
+                    m = 'gen_%d_ind_%d' % (t,b_index)
+                    f.write(m)
+                    f.close()
 
         elif evt.key is not OIS.KC_ESCAPE:
             best_selected = self.Keyboard.getAsString(evt.key)
@@ -443,92 +463,51 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         '''
         global GEN_COUNTER
         # ----------------------------------------- #
+        prefix = ['gen']
+        if self.collaborate:
+            prefix = ['gen', 'peer_gen'] if GEN_COUNTER else ['gen']
+
         for sf in ['cg', 'program', 'material']:
+                
+                #prefix = ['gen', 'peer_gen'] if GEN_COUNTER else ['gen']
+                for d in prefix:
+                    # dynamic loading of material
+                    f= file("%s_%d.%s" % (d, GEN_COUNTER, sf), 'r')
+                    MatString = f.read()
+                    f.close()
+                    RawMemBuffer = ctypes.create_string_buffer( MatString  ) ## Note it allocates one extra byte
+                    ## Now we create the MemoryDataStream using the void pointer to the ctypes buffer
+                    dataptr = ogre.MemoryDataStream ( pMem = ogre.CastVoidPtr(ctypes.addressof ( RawMemBuffer )), 
+                            size = len (MatString) + 1 )
 
-            # dynamic loading of material
-            f= file("gen_%d.%s" % (GEN_COUNTER, sf), 'r')
-            MatString = f.read()
-            f.close()
-            RawMemBuffer = ctypes.create_string_buffer( MatString  ) ## Note it allocates one extra byte
-            ## Now we create the MemoryDataStream using the void pointer to the ctypes buffer
-            dataptr = ogre.MemoryDataStream ( pMem = ogre.CastVoidPtr(ctypes.addressof ( RawMemBuffer )), 
-                    size = len (MatString) + 1 )
-
-            ogre.MaterialManager.getSingleton().parseScript(dataptr, ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME)
+                    ogre.MaterialManager.getSingleton().parseScript(dataptr, ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME)
 
         # ----------------------------------------- #
 
 
         text_overlays = []
         sceneManager = self.sceneManager
-        sceneManager.destroyAllEntities()
-        root_node = sceneManager.getRootSceneNode()
-
-        #[root_node.getChild('Individual%d' % i).removeAllChildren() for i in range(9)]
 
         print self.genomes
 
-        j = 0
-        vj = 0
-        vi = 0
 
         for i, node in enumerate(self.ind_nodes):
-            node.removeAndDestroyAllChildren()
-            #node_genes = self.genomes[i]
-            node.position = (0, 0, 0)
-            #self.makeCharacter(i, node, node_genes)
-
-            name = 'Node_%d_%d' % (i, (nextNum()))
-            child_node = node.createChildSceneNode(name)
-            ent = sceneManager.createEntity(name, 'ninja.mesh')
-            #m = 'InflateBody'
-            #m = 'InflateBodyX'
+            ent = node.getAttachedObject(0)
             m = 'gen_%d_ind_%d' % (GEN_COUNTER,i)
             ent.setMaterialName(m)
-            ent.setQueryFlags(self.OBJ_MASK)
-            node.attachObject(ent)
-
-            node.position = (vi*SPACE, vj*VSPACE, vi*SPACE)
 
 
-            vi += 1
-            j += 1
-            if j % 3 == 0:
-                vj -= 1
-                vi = 0
+
+        if self.collaborate and GEN_COUNTER > 0:
+
+            for i, node in enumerate(self.peer_nodes):
+                ent = node.getAttachedObject(0)
+                m = 'peer_gen_%d_ind_%d' % (GEN_COUNTER,i)
+                ent.setMaterialName(m)
 
 
-        j = 0
-        vj = 0
-        vi = 0
-        offset = SPACE * 4
 
-        for i, node in enumerate(self.peer_nodes):
-            node.removeAndDestroyAllChildren()
-            #node_genes = self.genomes[i]
-            node.position = (0, 0, 0)
-            #self.makeCharacter(i, node, node_genes)
-
-            name = 'Peer_%d_%d' % (i, (nextNum()))
-            child_node = node.createChildSceneNode(name)
-            ent = sceneManager.createEntity(name, 'ninja.mesh')
-
-            m = 'gen_%d_ind_%d' % (GEN_COUNTER,i)
-            ent.setMaterialName(m)
-            ent.setQueryFlags(self.OBJ_MASK)
-            node.attachObject(ent)
-
-            node.position = (vi*SPACE + offset, vj*VSPACE, vi*SPACE + offset)
-
-
-            vi += 1
-            j += 1
-            if j % 3 == 0:
-                vj -= 1
-                vi = 0
-
-
-        GEN_COUNTER += 1
+        GEN_COUNTER += self.ga.getVar('stepSize')
 
 
 #----------------------------------------#
@@ -550,7 +529,7 @@ class TutorialApp(sf.Application):
         light.diffuseColour = (1, 1, 1)
         light.specularColour = (1, 1, 1)
 
-        node = sceneManager.getRootSceneNode().createChildSceneNode('CamNode1', (-400, 200, 400))
+        node = sceneManager.getRootSceneNode().createChildSceneNode('CamNode1', (-300, 200, 400))
         node.yaw(ogre.Degree(-45))
 
         node = node.createChildSceneNode('PitchNode1')
@@ -567,6 +546,7 @@ class TutorialApp(sf.Application):
     def _createCamera(self):
         self.camera = self.sceneManager.createCamera('PlayerCam')
         self.camera.nearClipDistance = 5
+        self.camera.lookAt(ogre.Vector3(0, 0, 0))
 
 #---------------------------------#
     def _createFrameListener(self):
