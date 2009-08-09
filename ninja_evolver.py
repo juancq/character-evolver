@@ -169,14 +169,27 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
 
         j, vj, vi, offset = 0, 0, 0, SPACE * 4
 
+        # begin animation stuff
+        ogre.Animation.setDefaultInterpolationMode(ogre.Animation.IM_SPLINE)
+        self.animationStates = []
+        self.animationSpeeds = []
+
+        # end animation stuff
+
+        mesh = 'ninja.mesh'
+        #mesh = 'robot.mesh'
         # create nodes to hold subset models and peers
         peer_nodes = []
         ind_nodes = []
         for i in range(len(self.genomes)):
 
             name = 'Node_%d_%d' % (i, (nextNum()))
-            ent = sceneManager.createEntity(name, 'ninja.mesh')
+            ent = sceneManager.createEntity(name, mesh)
             ent.setQueryFlags(self.OBJ_MASK)
+
+            self.animationStates.append(ent.getAnimationState('Walk'))
+            self.animationStates[-1].Enabled = True
+            self.animationSpeeds.append(ogre.Math.RangeRandom(0.5, 1.5))
 
             node = sceneManager.getRootSceneNode().createChildSceneNode('Individual%d' % i)
             node.attachObject(ent)
@@ -184,6 +197,7 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
             # incremental diagonal placement
             #node.position = (vi*SPACE, vj*VSPACE, 0)
             node.yaw(-180)
+            #node.yaw(-90)
 
             #sep_node = sceneManager.getRootSceneNode().createChildSceneNode('Separator%d' % i)
             #sep_node.position = (0,0,0)
@@ -197,7 +211,7 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
 
 
             name = 'Peer_%d_%d' % (i, (nextNum()))
-            ent = sceneManager.createEntity(name, 'ninja.mesh')
+            ent = sceneManager.createEntity(name, mesh)
             ent.setQueryFlags(self.OBJ_MASK)
 
             p_node = sceneManager.getRootSceneNode().createChildSceneNode('Peer%d' % i)
@@ -229,6 +243,8 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         # Register as MouseListener (Basic tutorial 5)
         self.Mouse.setEventCallback(self)
         self.Keyboard.setEventCallback(self)
+
+        self.mesh_rotate = 0.
 
         self.rotate = 0.20
         self.move = MOVE
@@ -301,6 +317,14 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         elif evt.key is OIS.KC_J:
         # save best
             if self.best_selected:
+
+                node = self.best_selected['individual']
+                mat_ptr = node.getMaterial()
+                print 'name: ', mat_ptr.getName()
+                ent = node.getAttachedObject(0)
+                print '^' * 20
+                print ent.getMaterial().getName()
+
                 global GEN_COUNTER
                 if GEN_COUNTER > 0:
                     b_index = self.best_selected['index']
@@ -335,7 +359,16 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         if self.renderWindow.isClosed():
             return False
 
+        for index in range(len(self.animationStates)):
+            self.animationStates[index].addTime(frameEvent.timeSinceLastFrame * self.animationSpeeds[index])
+
         for ind in self.text_overlays: ind.update()
+
+
+        #self.mesh_rotate += 0.1
+        #self.mesh_rotate %= 360
+        #for i, node in enumerate(self.ind_nodes):
+        #    node.yaw(self.mesh_rotate)
 
         self.Keyboard.capture()
         self.Mouse.capture()
@@ -490,12 +523,10 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
 
         print self.genomes
 
-
         for i, node in enumerate(self.ind_nodes):
             ent = node.getAttachedObject(0)
             m = 'gen_%d_ind_%d' % (GEN_COUNTER,i)
             ent.setMaterialName(m)
-
 
 
         if self.collaborate and GEN_COUNTER > 0:

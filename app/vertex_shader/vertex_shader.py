@@ -137,6 +137,7 @@ class Vertex_shader(app.Application):
         texture_unit
         {
             texture nskingr.jpg
+            //texture r2skin.jpg
         }
 
         }\n}\n}

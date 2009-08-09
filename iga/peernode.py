@@ -12,7 +12,6 @@ class PeerNode:
         self.connected = False
         self.port = port
 
-        print '^4832' * 10
         self.connect()
 
     def getName(self):
