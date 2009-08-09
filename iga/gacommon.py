@@ -162,6 +162,14 @@ class CommonParams:
         else:
             self.params['random'] = rnd.Random()
 
+
+        import time
+        t = time.localtime()
+        h, m, s = t[3], t[4], t[5]
+        user = self.params['user']
+        self.params['user'] = '%s_%d%d%d' % (user, h, m, s)
+
+
 #-------------------------------------------#
     def exit(self):
         '''
@@ -396,9 +404,12 @@ class CommonParams:
                         must.append(genome_objs[0])
                         to_draw.extend(genome_objs[1:])
 
-            subset = must + rnd.sample(to_draw, subset_size-len(must))
-            self.draw_peers({'peer_genomes': subset})
-            self.peer_subset = subset
+            if must and draw:
+                subset = must + rnd.sample(to_draw, subset_size-len(must))
+                self.draw_peers({'peer_genomes': subset})
+                self.peer_subset = subset
+            else:
+                return []
 
         else:
             return []
@@ -430,6 +441,7 @@ class CommonParams:
         '''
         Web method.
         '''
+        context['user'] = self.params['user']
         return self.ga.igaStep(context)
 
 #-------------------------------------------#

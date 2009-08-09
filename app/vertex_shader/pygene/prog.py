@@ -408,9 +408,9 @@ class ProgOrganism(BaseOrganism):
         self.tree = root
 
 
-        num_eqs = randrange(1, len(self.eqs)+1)
-        self.eq_picked = rnd.sample(self.eqs, num_eqs)
-        #self.eq_picked = choice(self.eqs)
+        #num_eqs = randrange(1, len(self.eqs)+1)
+        #self.eq_picked = rnd.sample(self.eqs, num_eqs)
+        self.eq_picked = [choice(self.eqs)]
 
     
     #@-node:__init__

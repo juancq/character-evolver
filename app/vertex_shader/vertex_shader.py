@@ -70,9 +70,11 @@ class Vertex_shader(app.Application):
         [best]
         '''
         best = user_feedback[0]
-        if self.clear:
-            self.decode(best)
-            self.clear = False
+        self.decode(best)
+
+        #if self.clear:
+        #    self.decode(best)
+        #    self.clear = False
 
         self.decode(ind)
         min_len = min(len(ind.genome), len(best.genome))
@@ -101,8 +103,9 @@ class Vertex_shader(app.Application):
 
         if ind.genome == best.genome:
             ind.fitness *= 2
-        elif len(ind_genome) > 10:
-            ind.fitness *= 0.5
+            print '^%^'*10
+        #elif len(ind_genome) > 10:
+        #    ind.fitness *= 0.5
 
 #-------------------------------------------#
     def draw(self, subset, context):
@@ -110,11 +113,13 @@ class Vertex_shader(app.Application):
         Return a list of panels to be displayed to the user for evaluation.
         Use the arg parentPanel as the parent for each of the panels created.
         '''
-        prefix = 'gen'
+        prefix = '%s_' % context['user']
         global GEN_COUNTER
         if context.has_key('peer_genomes'):
-            prefix = 'peer_gen'
+            prefix += 'peer_gen'
             GEN_COUNTER -= 1
+        else:
+            prefix += 'gen'
 
         gen = GEN_COUNTER
 

@@ -1,8 +1,8 @@
 inherits: [iga.yml]
 seed: null
 stepSize: 2
-user: user1
-peers: ['amit.cse.unr.edu']
+user: user2
+peers: ['amit', 'gc3', 'gc4']
 population:
   type: igastandard
   size: 50

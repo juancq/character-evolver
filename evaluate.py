@@ -160,13 +160,6 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         self.sceneManager = sceneManager
         self.cegui = cegui
 
-        #curstudy = 'delta_tree_character3d.yml'
-        curstudy = 'vertex_shader.yml'
-        l = 7
-        ga = evolve.init_iga({'app_name': curstudy, 'geomNodes': l})
-        self.genomes = ga.draw()
-        self.ga = ga
-
         j, vj, vi, offset = 0, 0, 0, SPACE * 4
 
         # begin animation stuff
@@ -181,11 +174,16 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         # create nodes to hold subset models and peers
         peer_nodes = []
         ind_nodes = []
-        for i in range(len(self.genomes)):
+        f = open('save_best', 'r')
+        best_files = f.readlines()
+        f.close()
+
+        for i in range(len(best_files)):
 
             name = 'Node_%d_%d' % (i, (nextNum()))
             ent = sceneManager.createEntity(name, mesh)
             ent.setQueryFlags(self.OBJ_MASK)
+            ent.setMaterialName(best_files[i].strip())
 
             self.animationStates.append(ent.getAnimationState('Walk'))
             self.animationStates[-1].Enabled = True
@@ -211,16 +209,6 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
             #sep_node.position = (vi*SPACE, vj*VSPACE + offset, vi*SPACE + offset)
 
 
-            name = 'Peer_%d_%d' % (i, (nextNum()))
-            ent = sceneManager.createEntity(name, mesh)
-            ent.setQueryFlags(self.OBJ_MASK)
-
-            p_node = sceneManager.getRootSceneNode().createChildSceneNode('Peer%d' % i)
-            p_node.attachObject(ent)
-            p_node.position = (vi*SPACE + offset, vj*VSPACE, vi*SPACE + offset)
-            p_node.yaw(-180)
-            p_node.setVisible(True)
-
             vi += 1
             j += 1
             if j % 3 == 0:
@@ -228,18 +216,8 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
                 vi = 0
 
             ind_nodes.append(node)
-            peer_nodes.append(p_node)
 
         self.ind_nodes = ind_nodes
-        self.peer_nodes = peer_nodes
-
-        # add screen splitter
-        split = sceneManager.getRootSceneNode().createChildSceneNode('ScreenSplit')
-        ent = sceneManager.createEntity('SplitMesh', 'column.mesh')
-        split.attachObject(ent)
-        split.position = (3*SPACE, -SPACE*2, 3*SPACE)
-        split.setScale(0.25, 5.0, 0.25)
-
 
         # Register as MouseListener (Basic tutorial 5)
         self.Mouse.setEventCallback(self)
@@ -290,66 +268,8 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
 #---------------------------------#
     def keyPressed(self, evt):
 
-        if evt.key is OIS.KC_N:
-            self.newPop()
-
-        elif evt.key is OIS.KC_RETURN:
-            print 'the best selected are ', self.best_selected
-            print 'from peers', self.peer_selected
-            if self.best_selected:
-                b_index = self.best_selected['index']
-                inject = self.peer_selected.keys()
-
-                c = {'feedback': [b_index], 'inject_genomes': inject}
-                c['user'] = self.ga.getVar('user')
-                self.genomes = self.ga.web_step(c)
-
-                if self.collaborate:
-                    self.peer_genomes = self.ga.get_peer_genomes()
-
-                self.best_selected['individual'].showBoundingBox(False)
-                self.best_selected['index'] = None
-                self.best_selected['individual'] = None
-
-                for ind in self.peer_selected.values(): ind.showBoundingBox(False)
-                self.peer_selected = {}
-
-                self.newPop()
-
-        elif evt.key is OIS.KC_R:
-            self.collaborate = True
-            self.all_online = self.ga.pingPeers()
-            print 'result', self.all_online
-
-        elif evt.key is OIS.KC_J:
-        # save best
-            if self.best_selected:
-
-
-                global GEN_COUNTER
-                if GEN_COUNTER > 0:
-                    b_index = self.best_selected['index']
-                    f = open('save_best', 'a')
-                    t = GEN_COUNTER
-                    t -= self.ga.getVar('stepSize')
-                    prefix = self.ga.getVar('user')
-                    m = '%s_gen_%d_ind_%d\n' % (prefix, t,b_index)
-                    f.write(m)
-                    f.close()
-
-        elif evt.key is not OIS.KC_ESCAPE:
-            best_selected = self.Keyboard.getAsString(evt.key)
-            if self.ga and best_selected in self.num_keys:
-                print 'pressed', self.Keyboard.getAsString(evt.key)
-                best_selected = int(best_selected)
-                best_selected -= 1
-                if best_selected >= 0 and best_selected < 9:
-                    self.genomes = self.ga.web_step({'feedback': [best_selected]})
-                    self.newPop()
-
-        else:
-            self.ga.exit()
-
+        #if evt.key is OIS.KC_ESCAPE:
+        #    self.ga.exit()
         return True
 
 #---------------------------------#
