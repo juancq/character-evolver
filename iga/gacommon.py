@@ -456,6 +456,7 @@ class CommonParams:
         '''
         Web method.
         '''
+        context['user'] = self.params['user']
         #panels = self.ga.draw(parent_panel, genomes)
         return self.ga.draw(context)
 
