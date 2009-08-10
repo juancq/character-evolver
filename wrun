@@ -1,0 +1,4 @@
+#!/bin/bash
+
+mv user*_* data/
+~/.wine/drive_c/Python25/python.exe ninja_evolver.py $1

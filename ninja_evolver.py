@@ -75,11 +75,15 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         self.Mouse.setEventCallback(self)
         self.Keyboard.setEventCallback(self)
 
+        collab = False
+        import sys
+        if len(sys.argv) > 1:
+            collab = True
 
         #curstudy = 'delta_tree_character3d.yml'
         curstudy = 'vertex_shader.yml'
         l = 7
-        ga = evolve.init_iga({'app_name': curstudy, 'geomNodes': l})
+        ga = evolve.init_iga({'app_name': curstudy, 'geomNodes': l, 'collaborate': collab})
         self.genomes = ga.draw()
         self.ga = ga
 

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+mv user*_* data/
+for i in $(cat save_best);
+do
+    X=`echo $i | tr '_' ' ' | awk '{print $1 "_"  $2 "_"  $3 "_"  $4}'`;
+    cp data/${X}* .
+done;

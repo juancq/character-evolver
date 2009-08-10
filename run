@@ -1,0 +1,4 @@
+#!/bin/bash
+
+mv user*_* data/
+python ninja_evolver.py $1
