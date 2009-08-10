@@ -1,9 +1,8 @@
-try:
-    import psyco
-    psyco.full()
-except:
-    print 'no psyco'
-
+#try:
+#    import psyco
+#    psyco.full()
+#except:
+#    print 'no psyco'
 
 
 import sys
@@ -42,95 +41,6 @@ def nextNum():
     return NEXTNUM
 
 
-#-------------------------------------------#
-class OgreText(object):
-    """Class for displaying text in Ogre above a Movable."""
-    def __init__(self, movable, camera, text=''):
-        self.movable = movable
-        self.camera = camera
-        self.text = ''
-        self.enabled = True
-
-        ovm = ogre.OverlayManager.getSingleton()
-        self.overlay = ov = ovm.create(tempName())
-        self.container = c = ovm.createOverlayElement('Panel', tempName())
-        ov.add2D(c)
-        self.textArea = t = ovm.createOverlayElement('TextArea', tempName())
-        t.setDimensions(1.0, 1.0)
-        t.setMetricsMode(ogre.GMM_PIXELS)
-        t.setPosition(0, 0)
-        t.setParameter('font_name', 'BlueHighway')
-        t.setParameter('char_height', '16')
-        t.setParameter('horz_align', 'center')
-        t.setColour(ogre.ColourValue(1.0, 0.0, 0.0))
-        c.addChild(t)
-        ov.show()
-
-        self.setText(text)
-
-    def __del__(self):
-        self.destroy()
-
-    def destroy(self):
-        if hasattr(self, 'dead'): return
-        self.dead = True
-        self.overlay.hide()
-        ovm = ogre.OverlayManager.getSingleton()
-        self.container.removeChild(self.textArea.name)
-        self.overlay.remove2D(self.container)
-        ovm.destroyOverlayElement(self.textArea.name)
-        ovm.destroyOverlayElement(self.container.name)
-        ovm.destroy(self.overlay.name)
-
-    def enable(self, f):
-        self.enabled = f
-        if f:
-            self.overlay.show()
-        else:
-            self.overlay.hide()
-
-    def setText(self, text):
-        self.text = text
-        self.textArea.setCaption(ogre.UTFString(text))
-
-    def update(self):
-        if not self.enabled : return
-
-        # get the projection of the object's AABB into screen space
-        bbox = self.movable.getWorldBoundingBox(True);
-        mat = self.camera.getViewMatrix();
-        corners = bbox.getAllCorners();
-
-        min_x, max_x, min_y, max_y = 1.0, 0.0, 1.0, 0.0
-        # expand the screen-space bounding-box so that it completely encloses 
-        # the object's AABB
-        for corner in corners:
-            # multiply the AABB corner vertex by the view matrix to 
-            # get a camera-space vertex
-            corner = mat * corner;
-            # make 2D relative/normalized coords from the view-space vertex
-            # by dividing out the Z (depth) factor -- this is an approximation
-            x = corner.x / corner.z + 0.5
-            y = corner.y / corner.z + 0.5
-
-            if x < min_x: min_x = x
-            if x > max_x: max_x = x
-            if y < min_y: min_y = y
-            if y > max_y: max_y = y
-            
-        # we now have relative screen-space coords for the
-        # object's bounding box; here we need to center the
-        # text above the BB on the top edge. The line that defines
-        # this top edge is (min_x, min_y) to (max_x, min_y)
-
-        # self.container.setPosition(min_x, min_y);
-        # Edited by alberts: This code works for me
-        self.container.setPosition(1-max_x, min_y);
-        # 0.1, just "because"
-        self.container.setDimensions(max_x - min_x, 0.1);
-
-
-
 def get_width_height(cur_node):
     aab = cur_node.getAttachedObject(0).getBoundingBox();
     min = aab.getMinimum() * cur_node.getScale();
@@ -152,14 +62,19 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         OIS.MouseListener.__init__(self)
         OIS.KeyListener.__init__(self)
 
-        self.text_overlays = []
-        self.peer_genomes = []
+        # initialized with garbage intentional
+        self.peer_genomes = [0]
         self.toggle = 0
         self.mouse_down = False
 
         self.cam_node = camera.parentSceneNode.parentSceneNode
         self.sceneManager = sceneManager
         self.cegui = cegui
+
+        # Register as MouseListener (Basic tutorial 5)
+        self.Mouse.setEventCallback(self)
+        self.Keyboard.setEventCallback(self)
+
 
         #curstudy = 'delta_tree_character3d.yml'
         curstudy = 'vertex_shader.yml'
@@ -216,6 +131,10 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
             ent = sceneManager.createEntity(name, mesh)
             ent.setQueryFlags(self.OBJ_MASK)
 
+            self.animationStates.append(ent.getAnimationState('Walk'))
+            self.animationStates[-1].Enabled = True
+            self.animationSpeeds.append(ogre.Math.RangeRandom(0.5, 1.5))
+
             p_node = sceneManager.getRootSceneNode().createChildSceneNode('Peer%d' % i)
             p_node.attachObject(ent)
             #p_node.position = (vi*SPACE + offset, vj*VSPACE, vi*SPACE + offset)
@@ -240,13 +159,10 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         split = sceneManager.getRootSceneNode().createChildSceneNode('ScreenSplit')
         ent = sceneManager.createEntity('SplitMesh', 'column.mesh')
         split.attachObject(ent)
-        split.position = (3*SPACE, -SPACE*2, 3*SPACE)
+        split.position = (3*SPACE, -SPACE*2, 0)
         split.setScale(0.25, 5.0, 0.25)
 
 
-        # Register as MouseListener (Basic tutorial 5)
-        self.Mouse.setEventCallback(self)
-        self.Keyboard.setEventCallback(self)
 
         self.mesh_rotate = 0.
 
@@ -366,9 +282,6 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
 
         for index in range(len(self.animationStates)):
             self.animationStates[index].addTime(frameEvent.timeSinceLastFrame * self.animationSpeeds[index])
-
-        for ind in self.text_overlays: ind.update()
-
 
         #self.mesh_rotate += 0.1
         #self.mesh_rotate %= 360
@@ -598,7 +511,6 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         # ----------------------------------------- #
 
 
-        text_overlays = []
         sceneManager = self.sceneManager
 
         print self.genomes

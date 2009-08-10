@@ -16,7 +16,7 @@ class PeerNode:
         self.connected = False
         self.port = port
 
-        print '^4832' * 10
+        print '^' * 10
         self.connect()
 
     def getName(self):
@@ -92,6 +92,7 @@ class CommonParams:
         self.app_name = None
         self.yaml_file = None
         self.dirty = False
+        self.peer_subset = []
 
 #-------------------------------------------#
     def reset(self):
@@ -408,6 +409,8 @@ class CommonParams:
                 subset = must + rnd.sample(to_draw, subset_size-len(must))
                 self.draw_peers({'peer_genomes': subset})
                 self.peer_subset = subset
+                return self.peer_subset
+
             else:
                 return []
 
@@ -426,8 +429,11 @@ class CommonParams:
         Web method.
         '''
         user_feedback = context.get('feedback', [])
-        inject_genomes = context.get('inject_genomes', {})
-        inject_genomes = {'genomes': None, 'best': None}
+        peer_keys = context.get('inject_genomes', [])
+        s = self.peer_subset
+        inj_genomes = []
+        if s: inj_genomes = [s[i] for i in peer_keys]
+        inject_genomes = {'genomes': inj_genomes, 'best': None}
 
         # get from peers
 
