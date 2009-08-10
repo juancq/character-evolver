@@ -309,6 +309,8 @@ class CommonParams:
         Called when GA is created.
         '''
         self.createPeers()
+        print 'colab', context['collaborate']
+        self.params['collaborate'] = context['collaborate']
 
         self.params['application']['init_context'] = context
         from iga import IGA

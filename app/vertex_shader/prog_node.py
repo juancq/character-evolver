@@ -15,6 +15,7 @@ from random import random, uniform
 from pygene.prog import ProgOrganism
 from pygene.population import Population
 
+from iga.gacommon import gaParams
 # a tiny batch of functions
 def add(x,y):
     #print "add: x=%s y=%s" % (repr(x), repr(y))
@@ -113,11 +114,44 @@ class MyProg(ProgOrganism):
         'cos' : cos,
         'tan' : tan,
         }
-    vars = ['p.x', 'p.y', 'p.z', 'time', 'factor']# ,'time', 'time', 'time']
+    vars = ['p.x', 'p.y', 'p.z', 'factor' ,'time']#, 'time', 'time']
     consts = [0.0, 0.5, 1.0, 2.0, 5.0, 10.0]
     eqs = ['p.x', 'p.y', 'p.z', 'p.xyz']
     #eqs = ['p.xyz']
 
+    user =  gaParams.getVar('user')
+    collab =  gaParams.getVar('collaborate')
+
+    if collab:
+        t_id = int(user.split('_')[0][-1])
+        print '%' * 10
+        print t_id
+        
+        if t_id % 2:
+            funcs.pop('sin', None)
+            funcs.pop('cos', None)
+            funcs.pop('tan', None)
+        else:
+            funcs.pop('*', None)
+            funcs.pop('/', None)
+
+        #if t_id % 2:
+        #    if 'time' in self.vars:
+        #        self.vars.remove('time')
+        #else:
+        #    if 'p.x' in self.vars:
+        #        self.vars.remove('p.x')
+
+        #    if 'p.y' in self.vars:
+        #        self.vars.remove('p.y')
+
+        #    if 'p.z' in self.vars:
+        #        self.vars.remove('p.z')
+    else:
+        #if 'time' in self.vars:
+        #    self.vars.remove('time')
+        funcs.pop('*', None)
+        funcs.pop('/', None)
 
     mutProb = 0.01
 

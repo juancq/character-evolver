@@ -14,6 +14,8 @@ from organism import BaseOrganism
 
 from xmlio import PGXmlMixin
 
+from iga.gacommon import gaParams
+
 #@-node:imports
 #@+node:class BaseNode
 class BaseNode:
@@ -402,15 +404,51 @@ class ProgOrganism(BaseOrganism):
         """
         Creates this organism
         """
+
+        num_eqs = randrange(1, len(self.eqs)+1)
+        self.eq_picked = rnd.sample(self.eqs, num_eqs)
+        user =  gaParams.getVar('user')
+        collab =  gaParams.getVar('collaborate')
+
+        if collab:
+            t_id = int(user.split('_')[0][-1])
+            print '%' * 10
+            print t_id
+            
+            if t_id % 2:
+                self.funcs.pop('sin', None)
+                self.funcs.pop('cos', None)
+                self.funcs.pop('tan', None)
+            else:
+                self.funcs.pop('*', None)
+                self.funcs.pop('/', None)
+
+            #if t_id % 2:
+            #    if 'time' in self.vars:
+            #        self.vars.remove('time')
+            #else:
+            #    if 'p.x' in self.vars:
+            #        self.vars.remove('p.x')
+
+            #    if 'p.y' in self.vars:
+            #        self.vars.remove('p.y')
+
+            #    if 'p.z' in self.vars:
+            #        self.vars.remove('p.z')
+        else:
+            #if 'time' in self.vars:
+            #    self.vars.remove('time')
+            self.funcs.pop('*', None)
+            self.funcs.pop('/', None)
+                
+        print self.funcs, self.vars
+        #self.eq_picked = [choice(self.eqs)]
+
         if root == None:
             root = self.genNode()
     
         self.tree = root
 
-
-        #num_eqs = randrange(1, len(self.eqs)+1)
-        #self.eq_picked = rnd.sample(self.eqs, num_eqs)
-        self.eq_picked = [choice(self.eqs)]
 
     
     #@-node:__init__

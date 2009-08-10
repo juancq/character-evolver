@@ -219,7 +219,7 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         elif evt.key is OIS.KC_RETURN:
             print 'the best selected are ', self.best_selected
             print 'from peers', self.peer_selected
-            if self.best_selected:
+            if self.best_selected['index']:
                 b_index = self.best_selected['index']
                 inject = self.peer_selected.keys()
 
