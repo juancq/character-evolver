@@ -153,6 +153,7 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         OIS.KeyListener.__init__(self)
 
         self.text_overlays = []
+        self.peer_genomes = []
         self.toggle = 0
         self.mouse_down = False
 
