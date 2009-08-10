@@ -404,7 +404,7 @@ class CommonParams:
                         must.append(genome_objs[0])
                         to_draw.extend(genome_objs[1:])
 
-            if must and draw:
+            if must and to_draw:
                 subset = must + rnd.sample(to_draw, subset_size-len(must))
                 self.draw_peers({'peer_genomes': subset})
                 self.peer_subset = subset
