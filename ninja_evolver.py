@@ -219,7 +219,8 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
             p_node.attachObject(ent)
             #p_node.position = (vi*SPACE + offset, vj*VSPACE, vi*SPACE + offset)
             p_node.position = (vi*SPACE+offset, vj*VSPACE, 0)
-            p_node.yaw(-180)
+            p_node.yaw(-135)
+            #p_node.yaw(-180)
             p_node.setVisible(True)
 
             vi += 1
