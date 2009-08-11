@@ -109,7 +109,8 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
 
             self.animationStates.append(ent.getAnimationState('Walk'))
             self.animationStates[-1].Enabled = True
-            self.animationSpeeds.append(ogre.Math.RangeRandom(0.5, 1.5))
+            #self.animationSpeeds.append(ogre.Math.RangeRandom(0.5, 1.5))
+            self.animationSpeeds.append(1.0)
 
             node = sceneManager.getRootSceneNode().createChildSceneNode('Individual%d' % i)
             node.attachObject(ent)
@@ -167,6 +168,7 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         split.setScale(0.25, 5.0, 0.25)
 
 
+        self.pic_count = 0
 
         self.mesh_rotate = 0.
 
@@ -219,7 +221,7 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         elif evt.key is OIS.KC_RETURN:
             print 'the best selected are ', self.best_selected
             print 'from peers', self.peer_selected
-            if self.best_selected['index']:
+            if self.best_selected['index'] is not None:
                 b_index = self.best_selected['index']
                 inject = self.peer_selected.keys()
 
@@ -246,7 +248,7 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
 
         elif evt.key is OIS.KC_J:
         # save best
-            if self.best_selected:
+            if self.best_selected['index'] is not None:
 
 
                 global GEN_COUNTER
@@ -261,14 +263,15 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
                     f.close()
 
         elif evt.key is not OIS.KC_ESCAPE:
-            best_selected = self.Keyboard.getAsString(evt.key)
-            if self.ga and best_selected in self.num_keys:
-                print 'pressed', self.Keyboard.getAsString(evt.key)
-                best_selected = int(best_selected)
-                best_selected -= 1
-                if best_selected >= 0 and best_selected < 9:
-                    self.genomes = self.ga.web_step({'feedback': [best_selected]})
-                    self.newPop()
+            pass
+            #best_selected = self.Keyboard.getAsString(evt.key)
+            #if self.ga and best_selected in self.num_keys:
+            #    print 'pressed', self.Keyboard.getAsString(evt.key)
+            #    best_selected = int(best_selected)
+            #    best_selected -= 1
+            #    if best_selected >= 0 and best_selected < 9:
+            #        self.genomes = self.ga.web_step({'feedback': [best_selected]})
+            #        self.newPop()
 
         else:
             self.ga.exit()
@@ -291,6 +294,12 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         #self.mesh_rotate %= 360
         #for i, node in enumerate(self.ind_nodes):
         #    node.yaw(self.mesh_rotate)
+
+
+        #self.renderWindow.writeContentsToFile('pic_%d.png' % self.pic_count)
+        #self.pic_count += 1
+
+        #self.renderWindow.debugText = "Hello world"
 
         self.Keyboard.capture()
         self.Mouse.capture()

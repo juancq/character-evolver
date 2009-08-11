@@ -3,7 +3,7 @@ seed: null
 stepSize: 2
 user: user2
 #peers: ['amit.cse.unr.edu', 'gc3.cse.unr.edu', 'gc1.cse.unr.edu']
-#peers: ['amit.cse.unr.edu', 'monkeylord.cse.unr.edu', 'abra.cse.unr.edu']
+#peers: ['amit.cse.unr.edu', 'monkeylord.cse.unr.edu', 'gc3.cse.unr.edu']
 peers: ['amit.cse.unr.edu']
 population:
   type: igastandard

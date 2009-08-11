@@ -172,7 +172,7 @@ class Population(igastandard.Population):
         # explicitly copy the user selected individual into 
         # the next generation and set its rank to the highest
         randPos = random.randrange(0, self.popsize)
-        self.pop[randPos] = copy.deepcopy(self.user_selected[0])
-        self.pop[randPos].rank = 0
+        self.pop[randPos] = self.user_selected[0]
+        #self.pop[randPos].rank = 0
 
 #---------------------------------------#

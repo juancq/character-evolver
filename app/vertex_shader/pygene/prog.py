@@ -15,6 +15,7 @@ from organism import BaseOrganism
 from xmlio import PGXmlMixin
 
 from iga.gacommon import gaParams
+from ops import *
 
 #@-node:imports
 #@+node:class BaseNode
@@ -55,8 +56,8 @@ class FuncNode(BaseNode):
             # lookup func in organism
             #func, nargs = org.funcsDict[name]
             func, nargs = org.funcsDict.get(name, (None,None))
-            if func is None and args is None:
-                self.funcs = {
+            if func is None and nargs is None:
+                funcs = {
                     '+': add,
                     '-':sub,
                     '*': mul,
@@ -69,7 +70,17 @@ class FuncNode(BaseNode):
                     'cos' : cos,
                     'tan' : tan,
                     }
-            func, nargs = org.funcsDict.get(name, (None,None))
+
+                funcsList = []
+                funcsDict = {}
+                for name, func in funcs.items():
+                    funcsList.append((name, func, func.func_code.co_argcount))
+                    funcsDict[name] = (func, func.func_code.co_argcount)
+
+                org.funcsList = funcsList
+                org.funcsDict = funcsDict
+
+            func, nargs = org.funcsDict[name]
         
         # and fill in the args, from given, or randomly
         if not children:
@@ -428,9 +439,6 @@ class ProgOrganism(BaseOrganism):
 
         if collab:
             t_id = int(user.split('_')[0][-1])
-            print '%' * 10
-            print t_id
-            
             if t_id % 2:
                 self.funcs.pop('sin', None)
                 self.funcs.pop('cos', None)
@@ -457,7 +465,7 @@ class ProgOrganism(BaseOrganism):
             self.funcs.pop('*', None)
             self.funcs.pop('/', None)
                 
-        print self.funcs, self.vars
+        #print self.funcs, self.vars
         #self.eq_picked = [choice(self.eqs)]
 
         if root == None:

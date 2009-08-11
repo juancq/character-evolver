@@ -1,3 +1,5 @@
+import math
+import copy
 import gastandard
 
 class Population(gastandard.Population):
@@ -124,6 +126,68 @@ class Population(gastandard.Population):
             to_return = sub + self.subset[:sub_size]
             return to_return
 
+
+##---------------------------------------#
+#    def linear_scaling(self):
+#
+#        s_factor = 1.2
+#
+#        _max = pop[0].fitness
+#        avg = 0.
+#        for ind in pop:
+#            _max = ind.fitness if ind.fitness > _max
+#            avg += ind.fitness
+#
+#        average = avg/len(pop)
+#        _min = pop[0].fitness
+#        for ind in pop:
+#            _min = ind.fitness if ind.fitness < _min
+#
+#
+#
+#        if _min > (s_factor*average - _max)/(s_factor - 1.0):
+#            delta = _max - average
+#            a = (s_factor - 1.0)*average/delta
+#            b = average * (_max - s_factor*average)/delta
+#        else:
+#            delta = average - _min
+#            a = average/delta
+#            b = -1.0*_min*average/delta
+#        param = [a, b]
+#
+#
+##---------------------------------------#
+#    def fitness_scaling(self):
+#
+#        s = 1.005
+#        for i in range(0, self.popsize):
+#            self.popsize[i].fitness = math.pow(self.popsize[i], s_power)
+#        return scale_fit
+#
+
+#---------------------------------------#
+    def nextgen(self):
+        '''
+        Create next generation from current population.
+        '''
+        newPop = []
+        for i in range(0, self.popsize, 2):
+            p1 = self.selectParent()
+            p2 = self.selectParent()
+            c1, c2 = self.crossover(p1, p2)
+            self.params.mutate(c1)
+            self.params.mutate(c2)
+            newPop.extend([c1, c2])
+
+        self.eval(newPop)
+        self.combinepop(newPop)
+        try:
+            randPos = self.params.random.randrange(0, self.popsize)
+            self.pop[randPos] = copy.deepcopy(self.user_selected[0])
+            self.pop[randPos].fitness = 100
+        except:
+            print 'could not copy'
+            pass
 
 #---------------------------------------#
     def setPop(self, newPop):
