@@ -53,7 +53,23 @@ class FuncNode(BaseNode):
             name, func, nargs = choice(org.funcsList)
         else:
             # lookup func in organism
-            func, nargs = org.funcsDict[name]
+            #func, nargs = org.funcsDict[name]
+            func, nargs = org.funcsDict.get(name, (None,None))
+            if func is None and args is None:
+                self.funcs = {
+                    '+': add,
+                    '-':sub,
+                    '*': mul,
+                    '/':div,
+                    #'**': pow,
+                    #'pow': pow,
+                    'sqrt': sqrt,
+                    'log' : log,
+                    'sin' : sin,
+                    'cos' : cos,
+                    'tan' : tan,
+                    }
+            func, nargs = org.funcsDict.get(name, (None,None))
         
         # and fill in the args, from given, or randomly
         if not children:
