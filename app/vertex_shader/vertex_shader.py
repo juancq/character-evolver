@@ -20,10 +20,10 @@ class Vertex_shader(app.Application):
 
         #self.geomNodes = params['init_context']['geomNodes']
         #self.geneLen *= self.geomNodes
-        print '^'*30
-        print self.attr
+        #print '^'*30
+        #print self.attr
         self.geomNodes = params['init_context']['geomNodes']
-        print self.geomNodes, self.geneLen
+        #print self.geomNodes, self.geneLen
         #self.geneLen *= self.geomNodes
         #print self.geneLen
 

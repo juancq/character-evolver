@@ -551,9 +551,8 @@ class ProgOrganism(BaseOrganism):
         """
         prints out this organism's node tree
         """
-        print "organism:"
+        #print "organism:"
         dump_tree = self.tree.dump(1)
-        print dump_tree
         #print dump_tree
         return dump_tree
     
