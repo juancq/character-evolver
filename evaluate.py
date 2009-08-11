@@ -177,6 +177,12 @@ class GAListener(sf.FrameListener, OIS.MouseListener, OIS.KeyListener):
         f = open('save_best', 'r')
         best_files = f.readlines()
         f.close()
+        random.shuffle(best_files)
+
+        f = open('.order', 'w')
+        for i in best_files:
+            f.write(i)
+        f.close()
 
         for i in range(len(best_files)):
 
