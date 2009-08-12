@@ -49,7 +49,7 @@ class Population(gastandard.Population):
     def fitnessBias(self, pop):
         for ind in pop:
             bias = ind.bloodline
-            ind.fitness += ind.fitness * bias
+            ind.fitness += ind.fitness * bias * 2
 
 #---------------------------------------#
     def eval(self, pop=None):
